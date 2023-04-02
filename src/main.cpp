@@ -54,7 +54,8 @@ static void draw_side_bar(void)
     ImGui::End();
 }
 
-static void init(void) {
+static void init(void) 
+{
     // setup sokol-gfx and sokol-time
     sg_desc desc = { };
     desc.context = sapp_sgcontext();
