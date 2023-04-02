@@ -5,7 +5,7 @@ set SOURCE_DIR=%PROJECT_DIR%src
 set LIB_DIR=%PROJECT_DIR%lib
 set COMPILER_EXE="C:\Program Files\LLVM\bin\clang++.exe"
 set COMPILER_FLAGS=-g -std=c++20
-set LINKER_FLAGS= -nodefaultlibs -fuse-ld=lld -fms-runtime-lib=dll_dbg
+set LINKER_FLAGS= -nodefaultlibs -fuse-ld=lld -fms-runtime-lib=dll_dbg -lole32
 set BASE_FILES=%SOURCE_DIR%\*.cpp
 
 if not exist bin mkdir bin
