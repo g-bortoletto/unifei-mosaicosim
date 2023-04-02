@@ -45,12 +45,12 @@ static void draw_side_bar(void)
 {
 	bool sidebar_open = true;
     ImGui::SetNextWindowPos(ImVec2(0, main_menu_bar_height));
-    ImGui::SetNextWindowSize(ImVec2(200, sapp_height() - main_menu_bar_height));
+    ImGui::SetNextWindowSize(ImVec2(side_bar_width, sapp_height() - main_menu_bar_height));
     ImGui::Begin("sidebar", &sidebar_open,
     	ImGuiWindowFlags_NoMove |
     	ImGuiWindowFlags_NoCollapse |
-    	ImGuiWindowFlags_NoResize |
-    	ImGuiWindowFlags_NoTitleBar);
+    	ImGuiWindowFlags_NoResize 
+|    	ImGuiWindowFlags_NoTitleBar);
     ImGui::End();
 }
 
