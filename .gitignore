@@ -1,5 +1,6 @@
 bin/
 utils/
 
+*.sublime-workspace
 *.exe
 *.rdbg
