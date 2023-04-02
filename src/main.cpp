@@ -103,10 +103,20 @@ static void init(void) {
 
 static void frame(void) 
 {
-    const int width = sapp_width();
-    const int height = sapp_height();
-    sgp_begin(width, height);
-    simgui_new_frame({ width, height, sapp_frame_duration(), sapp_dpi_scale() });
+    // update window size
+    window_width = sapp_width();
+    window_height = sapp_height();
+    window_ratio = window_width / (float)window_height;
+
+    // update viewport size
+    viewport_x = side_bar_width;
+    viewport_y = main_menu_bar_height;
+    viewport_width = window_width - side_bar_width;
+    viewport_height = window_height - main_menu_bar_height;
+    viewport_ratio = viewport_width / (float)viewport_height;
+
+    sgp_begin(window_width, window_height);
+    simgui_new_frame({ window_width, window_height, sapp_frame_duration(), sapp_dpi_scale() });
 
     sgp_set_color(0.05f, 0.05f, 0.05f, 1.0f);
     sgp_clear();
@@ -116,7 +126,7 @@ static void frame(void)
     draw_side_bar();
 
 	sg_pass_action pass_action = { };
-    sg_begin_default_pass(&pass_action, width, height);
+    sg_begin_default_pass(&pass_action, window_width, window_height);
     sgp_flush();
     sgp_end();
     simgui_render();
