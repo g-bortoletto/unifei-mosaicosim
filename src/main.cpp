@@ -71,34 +71,32 @@ static void open_image()
 static void draw_main_menu_bar(void)
 {
 	if (ImGui::BeginMainMenuBar())
-    {
-    	if (ImGui::BeginMenu("Arquivo"))
-    	{
-    		if (ImGui::MenuItem("Abrir imagem...", "CTRL+O")) 
-    		{
-    			nfdchar_t *file_path = 0;
-    			nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &file_path);
-    			if (result == NFD_OKAY)
-    			{
-                    main_image = load_image(file_path);
-    			}
-    		}
-    		if (ImGui::MenuItem("Sair", "ALT+F4")) { sapp_request_quit(); }
-    		ImGui::EndMenu();
-    	}
-    	if (ImGui::BeginMenu("Editar"))
-        {
-            if (ImGui::MenuItem("Desfazer", "CTRL+Z")) {}
-            if (ImGui::MenuItem("Refazer", "CTRL+Y", false, false)) {}  // Disabled item
-            ImGui::Separator();
-            if (ImGui::MenuItem("Recortar", "CTRL+X")) {}
-            if (ImGui::MenuItem("Copiar", "CTRL+C")) {}
-            if (ImGui::MenuItem("Colar", "CTRL+V")) {}
-            ImGui::EndMenu();
-        }
-        main_menu_bar_height = ImGui::GetWindowSize().y;
-    	ImGui::EndMainMenuBar();
-    }
+	{
+		if (ImGui::BeginMenu("Arquivo"))
+		{
+			if (ImGui::MenuItem("Abrir imagem...", "CTRL+O")) 
+			{
+				open_image();
+			}
+			if (ImGui::MenuItem("Sair", "ALT+F4")) { sapp_request_quit(); }
+			ImGui::EndMenu();
+		}
+		// if (ImGui::BeginMenu("Editar"))
+		// {
+		// 	if (ImGui::MenuItem("Desfazer", "CTRL+Z")) {}
+		// 	if (ImGui::MenuItem("Refazer", "CTRL+Y", false, false)) {}  // Disabled item
+		// 	ImGui::Separator();
+		// 	if (ImGui::MenuItem("Recortar", "CTRL+X")) {}
+		// 	if (ImGui::MenuItem("Copiar", "CTRL+C")) {}
+		// 	if (ImGui::MenuItem("Colar", "CTRL+V")) {}
+		// 	ImGui::EndMenu();
+		// }
+		main_menu_bar_height = ImGui::GetWindowSize().y;
+		ImGui::EndMainMenuBar();
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 }
 
 static void draw_side_bar(void)
