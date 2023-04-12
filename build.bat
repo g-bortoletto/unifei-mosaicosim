@@ -14,3 +14,5 @@ pushd bin
 cls
 clang++ %BASE_FILES% %COMPILER_FLAGS% %LINKER_FLAGS% -o program.exe
 popd
+
+echo 
