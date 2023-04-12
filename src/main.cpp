@@ -54,6 +54,20 @@ static sg_image load_image(const char *filename)
 	return img;
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+
+static void open_image()
+{
+	nfdchar_t *file_path = 0;
+	nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &file_path);
+	if (result == NFD_OKAY)
+	{
+		main_image = load_image(file_path);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 static void draw_main_menu_bar(void)
 {
 	if (ImGui::BeginMainMenuBar())
