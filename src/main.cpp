@@ -175,9 +175,9 @@ static void input(const sapp_event* e)
 		for (auto tri : program.tri_list)
 		{
 			float pt[] = { e->mouse_x, e->mouse_y };
-			if (point_is_inside_triangle(pt, tri))
+			if (point_is_inside_triangle(pt, tri.second))
 			{
-				program.selected = tri.id;
+				program.selected = tri.first;
 			}
 		}
 	}

@@ -54,13 +54,12 @@ void draw_side_bar(program_state_t *program)
 		if (ImGui::Button("Carregar imagem", ImVec2(185.0f, 0.0f)))     { open_image(&program->main_image); }
 		if (ImGui::Button("Adicionar triângulo", ImVec2(185.0f, 0.0f))) { add_triangle(program); }
 		ImGui::InputInt("ID", (int *)(&program->selected));
-		int tri_index = get_triangle(program);
-		if (tri_index >= 0)
+		if (program->selected)
 		{
-			ImGui::InputFloat2("A", program->tri_list[(id_t)tri_index].a);
-			ImGui::InputFloat2("B", program->tri_list[(id_t)tri_index].b);
-			ImGui::InputFloat2("C", program->tri_list[(id_t)tri_index].c);
-			ImGui::ColorPicker3("Cor", program->tri_list[(id_t)tri_index].color, 
+			ImGui::InputFloat2("A", program->tri_list[program->selected].a);
+			ImGui::InputFloat2("B", program->tri_list[program->selected].b);
+			ImGui::InputFloat2("C", program->tri_list[program->selected].c);
+			ImGui::ColorPicker3("Cor", program->tri_list[program->selected].color, 
 				ImGuiColorEditFlags_NoAlpha | 
 				ImGuiColorEditFlags_NoSidePreview);
 		}

@@ -12,7 +12,7 @@ void add_triangle(program_state_t *program)
 	tri.color[0] = 1.0f;
 	tri.color[2] = 1.0f;
 	tri.color[3] = 1.0f;
-	program->tri_list.push_back(tri);
+	program->tri_list.insert({ tri.id, tri });
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -54,33 +54,33 @@ void draw_triangles(const program_state_t *program)
 	if (program->tri_list.empty()) { return; }
 	for (auto tri : program->tri_list)
 	{
-		sgp_set_color(tri.color[0], tri.color[1], tri.color[2], tri.color[3]);
+		sgp_set_color(tri.second.color[0], tri.second.color[1], tri.second.color[2], tri.second.color[3]);
 		sgp_push_transform();
 		sgp_draw_filled_triangle(
-			tri.a[0], tri.a[1],
-			tri.b[0], tri.b[1],
-			tri.c[0], tri.c[1]);
+			tri.second.a[0], tri.second.a[1],
+			tri.second.b[0], tri.second.b[1],
+			tri.second.c[0], tri.second.c[1]);
 		sgp_pop_transform();
 		
 		sgp_set_color(37 / 255.0f, 150 / 255.0f, 190 / 255.0f, 1.0f);
 		float ps = 5.0f;
 		float hps = ps * 0.5f;
-		if (program->selected == tri.id)
+		if (program->selected == tri.second.id)
 		{
 			sgp_push_transform();
-			sgp_draw_line(tri.a[0], tri.a[1], tri.b[0], tri.b[1]);
-			sgp_draw_line(tri.a[0], tri.a[1], tri.c[0], tri.c[1]);
-			sgp_draw_line(tri.b[0], tri.b[1], tri.c[0], tri.c[1]);
+			sgp_draw_line(tri.second.a[0], tri.second.a[1], tri.second.b[0], tri.second.b[1]);
+			sgp_draw_line(tri.second.a[0], tri.second.a[1], tri.second.c[0], tri.second.c[1]);
+			sgp_draw_line(tri.second.b[0], tri.second.b[1], tri.second.c[0], tri.second.c[1]);
 			sgp_draw_filled_rect(
-				tri.a[0] - hps, tri.a[1] + hps,
+				tri.second.a[0] - hps, tri.second.a[1] + hps,
 				ps, -ps);
 			sgp_draw_filled_rect(
-				tri.b[0] - hps, tri.b[1] + hps,
+				tri.second.b[0] - hps, tri.second.b[1] + hps,
 				ps, -ps);
 			sgp_draw_filled_rect(
-				tri.c[0] - hps, tri.c[1] + hps,
+				tri.second.c[0] - hps, tri.second.c[1] + hps,
 				ps, -ps);
-			sgp_draw_point(tri.c[0], tri.c[1]);
+			sgp_draw_point(tri.second.c[0], tri.second.c[1]);
 			sgp_pop_transform();
 		}
 	}

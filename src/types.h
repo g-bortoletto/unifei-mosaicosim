@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include <map>
+
 // --------------------------------------------------------------------------------------------------------------------
 
 typedef unsigned long long id_t;
@@ -61,7 +63,7 @@ typedef struct program_state_t
 
 	id_t selected;
 
-	std::vector<triangle_t> tri_list;
+	std::map<id_t, triangle_t> tri_list;
 
 } program_state_t;
 
