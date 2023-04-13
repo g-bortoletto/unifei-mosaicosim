@@ -48,6 +48,8 @@ using namespace std;
 
 #include "types.h"
 
+#include "image.h"
+
 // --------------------------------------------------------------------------------------------------------------------
 
 #define global static
@@ -86,41 +88,6 @@ global vector<triangle_t> tri_list;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static sg_image load_image(const char *filename)
-{
-	int width, height, channels;
-	sg_image img = { SG_INVALID_ID };
-	unsigned char *data = stbi_load(filename, &width, &height, &channels, 4);
-	sg_image_desc image_desc = 
-	{
-		.width = width,
-		.height = height,
-		.min_filter = SG_FILTER_LINEAR,
-		.mag_filter = SG_FILTER_LINEAR,
-		.wrap_u = SG_WRAP_CLAMP_TO_EDGE,
-		.wrap_v = SG_WRAP_CLAMP_TO_EDGE,
-	};
-	image_desc.data.subimage[0][0].ptr = data;
-	image_desc.data.subimage[0][0].size = (size_t)(width * height * 4);
-	img = sg_make_image(&image_desc);
-	stbi_image_free(data);    
-	return img;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-
-static void open_image()
-{
-	nfdchar_t *file_path = 0;
-	nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &file_path);
-	if (result == NFD_OKAY)
-	{
-		main_image = load_image(file_path);
-	}
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-
 static void draw_main_menu_bar(void)
 {
 	if (ImGui::BeginMainMenuBar())
@@ -129,7 +96,7 @@ static void draw_main_menu_bar(void)
 		{
 			if (ImGui::MenuItem("Abrir imagem...", "CTRL+O")) 
 			{
-				open_image();
+				open_image(&main_image);
 			}
 			if (ImGui::MenuItem("Sair", "ALT+F4")) { sapp_request_quit(); }
 			ImGui::EndMenu();
@@ -211,7 +178,7 @@ static void draw_side_bar(void)
 		ImGuiWindowFlags_NoResize 
 |       ImGuiWindowFlags_NoTitleBar))
 	{
-		if (ImGui::Button("Carregar imagem", ImVec2(185.0f, 0.0f)))     { open_image(); }
+		if (ImGui::Button("Carregar imagem", ImVec2(185.0f, 0.0f)))     { open_image(&main_image); }
 		if (ImGui::Button("Adicionar triângulo", ImVec2(185.0f, 0.0f))) { add_triangle(); }
 		ImGui::InputInt("ID", (int *)(&selected));
 		int tri_index = get_triangle(selected);
