@@ -56,35 +56,42 @@ using namespace std;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-global id_t id_counter;
+typedef struct program_state_t
+{
 
-global int main_menu_bar_height;
+	id_t id_counter;
 
-global int side_bar_width = 200;
+	int main_menu_bar_height;
 
-global int window_width;
+	int side_bar_width = 200;
 
-global int window_height;
+	int window_width;
 
-global float window_ratio;
+	int window_height;
 
-global int viewport_x;
+	float window_ratio;
 
-global int viewport_y;
+	int viewport_x;
 
-global int viewport_width;
+	int viewport_y;
 
-global int viewport_height;
+	int viewport_width;
 
-global float viewport_ratio;
+	int viewport_height;
 
-global sg_image main_image;
+	float viewport_ratio;
 
-global sg_pipeline pipeline;
+	sg_image main_image;
 
-global id_t selected;
+	sg_pipeline pipeline;
 
-global vector<triangle_t> tri_list;
+	id_t selected;
+
+	vector<triangle_t> tri_list;
+
+} program_state_t;
+
+global program_state_t program;
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -96,7 +103,7 @@ static void draw_main_menu_bar(void)
 		{
 			if (ImGui::MenuItem("Abrir imagem...", "CTRL+O")) 
 			{
-				open_image(&main_image);
+				open_image(&program.main_image);
 			}
 			if (ImGui::MenuItem("Sair", "ALT+F4")) { sapp_request_quit(); }
 			ImGui::EndMenu();
@@ -111,7 +118,7 @@ static void draw_main_menu_bar(void)
 		// 	if (ImGui::MenuItem("Colar", "CTRL+V")) {}
 		// 	ImGui::EndMenu();
 		// }
-		main_menu_bar_height = ImGui::GetWindowSize().y;
+		program.main_menu_bar_height = ImGui::GetWindowSize().y;
 		ImGui::EndMainMenuBar();
 	}
 }
@@ -120,24 +127,24 @@ static void draw_main_menu_bar(void)
 
 static void add_triangle()
 {
-	float hw = viewport_width  * 0.5f + viewport_x;
-	float hh = viewport_height * 0.5f - viewport_y;
+	float hw = program.viewport_width  * 0.5f + program.viewport_x;
+	float hh = program.viewport_height * 0.5f - program.viewport_y;
 	triangle_t tri = { 0 };
-	tri.id = ++id_counter;
+	tri.id = ++program.id_counter;
 	tri.a[0] = hw + 0.0f;   tri.a[1] = hh + 100.0f;
 	tri.b[0] = hw + 100.0f; tri.b[1] = hh + 100.0f;
 	tri.c[0] = hw + 50.0f;  tri.c[1] = hh + 0.0f;
 	tri.color[0] = 1.0f;
 	tri.color[2] = 1.0f;
 	tri.color[3] = 1.0f;
-	tri_list.push_back(tri);
+	program.tri_list.push_back(tri);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
 static long long get_triangle(const id_t id)
 {
-	for (id_t i = 0; i < tri_list.size(); ++i) { if (id == tri_list[i].id) { return i; } }
+	for (id_t i = 0; i < program.tri_list.size(); ++i) { if (id == program.tri_list[i].id) { return i; } }
 	return -1;
 }
 
@@ -170,24 +177,24 @@ bool point_is_inside_triangle(float *pt, triangle_t triangle)
 static void draw_side_bar(void)
 {
 	bool sidebar_open = true;
-	ImGui::SetNextWindowPos(ImVec2(0, main_menu_bar_height));
-	ImGui::SetNextWindowSize(ImVec2(side_bar_width, sapp_height() - main_menu_bar_height));
+	ImGui::SetNextWindowPos(ImVec2(0, program.main_menu_bar_height));
+	ImGui::SetNextWindowSize(ImVec2(program.side_bar_width, sapp_height() - program.main_menu_bar_height));
 	if (ImGui::Begin("sidebar", &sidebar_open,
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse |
 		ImGuiWindowFlags_NoResize 
 |       ImGuiWindowFlags_NoTitleBar))
 	{
-		if (ImGui::Button("Carregar imagem", ImVec2(185.0f, 0.0f)))     { open_image(&main_image); }
+		if (ImGui::Button("Carregar imagem", ImVec2(185.0f, 0.0f)))     { open_image(&program.main_image); }
 		if (ImGui::Button("Adicionar triângulo", ImVec2(185.0f, 0.0f))) { add_triangle(); }
-		ImGui::InputInt("ID", (int *)(&selected));
-		int tri_index = get_triangle(selected);
+		ImGui::InputInt("ID", (int *)(&program.selected));
+		int tri_index = get_triangle(program.selected);
 		if (tri_index >= 0)
 		{
-			ImGui::InputFloat2("A", tri_list[(id_t)tri_index].a);
-			ImGui::InputFloat2("B", tri_list[(id_t)tri_index].b);
-			ImGui::InputFloat2("C", tri_list[(id_t)tri_index].c);
-			ImGui::ColorPicker3("Cor", tri_list[(id_t)tri_index].color, 
+			ImGui::InputFloat2("A", program.tri_list[(id_t)tri_index].a);
+			ImGui::InputFloat2("B", program.tri_list[(id_t)tri_index].b);
+			ImGui::InputFloat2("C", program.tri_list[(id_t)tri_index].c);
+			ImGui::ColorPicker3("Cor", program.tri_list[(id_t)tri_index].color, 
 				ImGuiColorEditFlags_NoAlpha | 
 				ImGuiColorEditFlags_NoSidePreview);
 		}
@@ -199,16 +206,16 @@ static void draw_side_bar(void)
 
 static void draw_main_image(void)
 {
-	if (main_image.id != SG_INVALID_ID)
+	if (program.main_image.id != SG_INVALID_ID)
 	{
-		sg_image_desc main_image_desc = sg_query_image_desc(main_image);
+		sg_image_desc main_image_desc = sg_query_image_desc(program.main_image);
 		const float image_ratio = main_image_desc.width / (float)main_image_desc.height;
-		sgp_set_image(0, main_image);
-		float main_image_width = viewport_ratio <= image_ratio ? viewport_width : (viewport_height * (float)image_ratio);
-		float main_image_height = viewport_ratio > image_ratio ? viewport_height : (viewport_width / (float)image_ratio);
+		sgp_set_image(0, program.main_image);
+		float main_image_width = program.viewport_ratio <= image_ratio ? program.viewport_width : (program.viewport_height * (float)image_ratio);
+		float main_image_height = program.viewport_ratio > image_ratio ? program.viewport_height : (program.viewport_width / (float)image_ratio);
 		sgp_draw_textured_rect(
-			viewport_x, 
-			viewport_y, 
+			program.viewport_x, 
+			program.viewport_y, 
 			main_image_width, 
 			main_image_height);
 		sgp_reset_image(0);
@@ -232,8 +239,8 @@ static void draw_main_image(void)
 
 static void draw_triangles()
 {
-	if (tri_list.empty()) { return; }
-	for (auto tri : tri_list)
+	if (program.tri_list.empty()) { return; }
+	for (auto tri : program.tri_list)
 	{
 		sgp_set_color(tri.color[0], tri.color[1], tri.color[2], tri.color[3]);
 		sgp_push_transform();
@@ -246,7 +253,7 @@ static void draw_triangles()
 		sgp_set_color(37 / 255.0f, 150 / 255.0f, 190 / 255.0f, 1.0f);
 		float ps = 5.0f;
 		float hps = ps * 0.5f;
-		if (selected == tri.id)
+		if (program.selected == tri.id)
 		{
 			sgp_push_transform();
 			sgp_draw_line(tri.a[0], tri.a[1], tri.b[0], tri.b[1]);
@@ -272,19 +279,19 @@ static void draw_triangles()
 static void frame(void) 
 {
 	// update window size
-	window_width = sapp_width();
-	window_height = sapp_height();
-	window_ratio = window_width / (float)window_height;
+	program.window_width = sapp_width();
+	program.window_height = sapp_height();
+	program.window_ratio = program.window_width / (float)program.window_height;
 
 	// update viewport size
-	viewport_x = side_bar_width;
-	viewport_y = main_menu_bar_height;
-	viewport_width = window_width - side_bar_width;
-	viewport_height = window_height - main_menu_bar_height;
-	viewport_ratio = viewport_width / (float)viewport_height;
+	program.viewport_x = program.side_bar_width;
+	program.viewport_y = program.main_menu_bar_height;
+	program.viewport_width = program.window_width - program.side_bar_width;
+	program.viewport_height = program.window_height - program.main_menu_bar_height;
+	program.viewport_ratio = program.viewport_width / (float)program.viewport_height;
 
-	sgp_begin(window_width, window_height);
-	simgui_new_frame({ window_width, window_height, sapp_frame_duration(), sapp_dpi_scale() });
+	sgp_begin(program.window_width, program.window_height);
+	simgui_new_frame({ program.window_width, program.window_height, sapp_frame_duration(), sapp_dpi_scale() });
 
 	sgp_set_color(0.05f, 0.05f, 0.05f, 1.0f);
 	sgp_clear();
@@ -296,7 +303,7 @@ static void frame(void)
 	draw_triangles();
 
 	sg_pass_action pass_action = { };
-	sg_begin_default_pass(&pass_action, window_width, window_height);
+	sg_begin_default_pass(&pass_action, program.window_width, program.window_height);
 	sgp_reset_pipeline();
 	sgp_flush();
 	sgp_end();
@@ -359,7 +366,7 @@ static void init(void)
 
 static void cleanup(void) 
 {
-	sg_destroy_image(main_image);
+	sg_destroy_image(program.main_image);
 	simgui_shutdown();
 	sgp_shutdown();
 	sg_shutdown();
@@ -371,21 +378,21 @@ static void input(const sapp_event* e)
 {
 	simgui_handle_event(e);
 
-	if (e->mouse_x > viewport_x &&
-		e->mouse_y > viewport_y &&
+	if (e->mouse_x > program.viewport_x &&
+		e->mouse_y > program.viewport_y &&
 		e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
 		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
-		for (auto tri : tri_list)
+		for (auto tri : program.tri_list)
 		{
 			float pt[] = { e->mouse_x, e->mouse_y };
 			if (point_is_inside_triangle(pt, tri))
 			{
-				selected = tri.id;
+				program.selected = tri.id;
 			}
 			else
 			{
-				selected = 0;
+				program.selected = 0;
 			}
 		}
 	}
