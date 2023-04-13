@@ -1,5 +1,11 @@
 // --------------------------------------------------------------------------------------------------------------------
 
+#include "types.h"
+
+#include "image.h"
+
+// --------------------------------------------------------------------------------------------------------------------
+
 #define IMGUI_IMPLEMENTATION
 
 #define IMGUI_DEMO
@@ -46,50 +52,9 @@ using namespace std;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#include "types.h"
-
-#include "image.h"
-
-// --------------------------------------------------------------------------------------------------------------------
-
 #define global static
 
 // --------------------------------------------------------------------------------------------------------------------
-
-typedef struct program_state_t
-{
-
-	id_t id_counter;
-
-	int main_menu_bar_height;
-
-	int side_bar_width = 200;
-
-	int window_width;
-
-	int window_height;
-
-	float window_ratio;
-
-	int viewport_x;
-
-	int viewport_y;
-
-	int viewport_width;
-
-	int viewport_height;
-
-	float viewport_ratio;
-
-	sg_image main_image;
-
-	sg_pipeline pipeline;
-
-	id_t selected;
-
-	vector<triangle_t> tri_list;
-
-} program_state_t;
 
 global program_state_t program;
 
