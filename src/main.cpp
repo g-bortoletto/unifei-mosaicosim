@@ -171,16 +171,13 @@ static void input(const sapp_event* e)
 		e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
 		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
+		program.selected = 0;
 		for (auto tri : program.tri_list)
 		{
 			float pt[] = { e->mouse_x, e->mouse_y };
 			if (point_is_inside_triangle(pt, tri))
 			{
 				program.selected = tri.id;
-			}
-			else
-			{
-				program.selected = 0;
 			}
 		}
 	}
