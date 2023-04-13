@@ -12,8 +12,6 @@
 
 #define IMGUI_IMPLEMENTATION
 
-#define IMGUI_DEMO
-
 #include "../include/imgui/imgui_single_file.h"
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -166,21 +164,45 @@ static void input(const sapp_event* e)
 {
 	simgui_handle_event(e);
 
-	if (e->mouse_x > program.viewport_x &&
-		e->mouse_y > program.viewport_y &&
-		e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
+	bool is_cursor_inside_viewport = e->mouse_x > program.viewport_x && e->mouse_y > program.viewport_y;
+
+	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
 		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
-		program.selected = 0;
-		for (auto tri : program.tri_list)
+		program.is_mouse_left_down = true;
+		if (is_cursor_inside_viewport)
 		{
-			float pt[] = { e->mouse_x, e->mouse_y };
-			if (point_is_inside_triangle(pt, tri.second))
+			program.selected = 0;
+			for (auto tri : program.tri_list)
 			{
-				program.selected = tri.first;
+				float pt[] = { e->mouse_x, e->mouse_y };
+				if (point_is_inside_triangle(pt, tri.second))
+				{
+					program.selected = tri.first;
+				}
 			}
 		}
 	}
+
+	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
+		e->mouse_button ==SAPP_MOUSEBUTTON_LEFT)
+	{
+		program.is_mouse_left_down = false;
+	}
+
+	if (is_cursor_inside_viewport &&
+		program.selected && 
+		program.is_mouse_left_down)
+	{
+		program.tri_list[program.selected].a[0] += e->mouse_dx;
+		program.tri_list[program.selected].b[0] += e->mouse_dx;
+		program.tri_list[program.selected].c[0] += e->mouse_dx;
+		program.tri_list[program.selected].a[1] += e->mouse_dy;
+		program.tri_list[program.selected].b[1] += e->mouse_dy;
+		program.tri_list[program.selected].c[1] += e->mouse_dy;
+	}
+
+	sapp_set_window_title(program.is_mouse_left_down ? "down" : "up");
 }
 
 // --------------------------------------------------------------------------------------------------------------------

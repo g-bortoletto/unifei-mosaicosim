@@ -35,6 +35,8 @@ typedef struct triangle_t
 typedef struct program_state_t
 {
 
+	bool is_mouse_left_down;
+
 	id_t id_counter;
 
 	int main_menu_bar_height;
