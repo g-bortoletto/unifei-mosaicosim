@@ -153,11 +153,13 @@ static void draw_main_menu_bar(void)
 
 static void add_triangle()
 {
+	float hw = viewport_width  * 0.5f + viewport_x;
+	float hh = viewport_height * 0.5f - viewport_y;
 	triangle_t tri = { 0 };
 	tri.id = ++id_counter;
-	tri.a[0] = 0.0f;   tri.a[1] = 100.0f;
-	tri.b[0] = 100.0f; tri.b[1] = 100.0f;
-	tri.c[0] = 50.0f;  tri.c[1] = 0.0f;
+	tri.a[0] = hw + 0.0f;   tri.a[1] = hh + 100.0f;
+	tri.b[0] = hw + 100.0f; tri.b[1] = hh + 100.0f;
+	tri.c[0] = hw + 50.0f;  tri.c[1] = hh + 0.0f;
 	tri.color[0] = 1.0f;
 	tri.color[2] = 1.0f;
 	tri.color[3] = 1.0f;
@@ -238,13 +240,10 @@ static void draw_main_image(void)
 static void draw_triangles()
 {
 	if (tri_list.empty()) { return; }
-	float hw = viewport_width * 0.5f;
-	float hh = viewport_height * 0.5f;
 	for (auto tri : tri_list)
 	{
 		sgp_set_color(tri.color[0], tri.color[1], tri.color[2], tri.color[3]);
 		sgp_push_transform();
-		sgp_translate(hw, hh);
 		sgp_draw_filled_triangle(
 			tri.a[0], tri.a[1],
 			tri.b[0], tri.b[1],
@@ -257,7 +256,6 @@ static void draw_triangles()
 		if (selected == tri.id)
 		{
 			sgp_push_transform();
-			sgp_translate(hw, hh);
 			sgp_draw_line(tri.a[0], tri.a[1], tri.b[0], tri.b[1]);
 			sgp_draw_line(tri.a[0], tri.a[1], tri.c[0], tri.c[1]);
 			sgp_draw_line(tri.b[0], tri.b[1], tri.c[0], tri.c[1]);
