@@ -196,7 +196,9 @@ static void draw_side_bar(void)
 			ImGui::InputFloat2("A", tri_list[(id_t)tri_index].a);
 			ImGui::InputFloat2("B", tri_list[(id_t)tri_index].b);
 			ImGui::InputFloat2("C", tri_list[(id_t)tri_index].c);
-			ImGui::ColorEdit4("Cor", tri_list[(id_t)tri_index].color);
+			ImGui::ColorPicker3("Cor", tri_list[(id_t)tri_index].color, 
+				ImGuiColorEditFlags_NoAlpha | 
+				ImGuiColorEditFlags_NoSidePreview);
 		}
 		ImGui::End();
 	}
