@@ -53,7 +53,7 @@ void draw_side_bar(program_state_t *program)
 	{
 		if (ImGui::Button("Carregar imagem", ImVec2(185.0f, 0.0f)))     { open_image(&program->main_image); }
 		if (ImGui::Button("Adicionar triângulo", ImVec2(185.0f, 0.0f))) { add_triangle(program); }
-		ImGui::InputInt("ID", (int *)(&program->selected));
+		ImGui::Text("ID: %lld", program->selected);
 		if (program->selected)
 		{
 			ImGui::InputFloat2("A", program->tri_list[program->selected].a);
