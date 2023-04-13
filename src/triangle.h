@@ -10,8 +10,8 @@ void add_triangle(program_state_t *program);
 
 long long get_triangle(program_state_t *program);
 
-static float sign(float *p1, float *p2, float *p3);
+const static float sign(const float *p1, const float *p2, const float *p3);
 
-bool point_is_inside_triangle(float *pt, triangle_t triangle);
+const bool point_is_inside_triangle(const float *pt, const triangle_t triangle);
 
-void draw_triangles(program_state_t *program);
+void draw_triangles(const program_state_t *program);

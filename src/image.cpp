@@ -12,7 +12,7 @@
 
 // --------------------------------------------------------------------------------------------------------------------
 
-sg_image load_image(const char *filename)
+const sg_image load_image(const char *filename)
 {
 	int width, height, channels;
 	sg_image img = { SG_INVALID_ID };
@@ -47,7 +47,7 @@ void open_image(sg_image *main_image)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-void draw_main_image(program_state_t *program)
+void draw_main_image(const program_state_t *program)
 {
 	if (program->main_image.id != SG_INVALID_ID)
 	{

@@ -25,14 +25,14 @@ long long get_triangle(program_state_t *program)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static float sign(float *p1, float *p2, float *p3)
+const static float sign(const float *p1, const float *p2, const float *p3)
 {
     return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-bool point_is_inside_triangle(float *pt, triangle_t triangle)
+const bool point_is_inside_triangle(const float *pt, const triangle_t triangle)
 {
     float d1, d2, d3;
     bool has_neg, has_pos;
@@ -49,7 +49,7 @@ bool point_is_inside_triangle(float *pt, triangle_t triangle)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-void draw_triangles(program_state_t *program)
+void draw_triangles(const program_state_t *program)
 {
 	if (program->tri_list.empty()) { return; }
 	for (auto tri : program->tri_list)
