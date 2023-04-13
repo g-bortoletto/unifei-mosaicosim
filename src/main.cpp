@@ -176,6 +176,30 @@ static long long get_triangle(const id_t id)
 
 // --------------------------------------------------------------------------------------------------------------------
 
+float sign(float *p1, float *p2, float *p3)
+{
+    return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+bool point_is_inside_triangle(float *pt, triangle_t triangle)
+{
+    float d1, d2, d3;
+    bool has_neg, has_pos;
+
+    d1 = sign(pt, triangle.a, triangle.b);
+    d2 = sign(pt, triangle.b, triangle.c);
+    d3 = sign(pt, triangle.c, triangle.a);
+
+    has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+
+    return !(has_neg && has_pos);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 static void draw_side_bar(void)
 {
 	bool sidebar_open = true;
@@ -376,9 +400,28 @@ static void cleanup(void)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static void input(const sapp_event* event) 
+static void input(const sapp_event* e) 
 {
-	simgui_handle_event(event);
+	simgui_handle_event(e);
+
+	if (e->mouse_x > viewport_x &&
+		e->mouse_y > viewport_y &&
+		e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
+		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
+	{
+		for (auto tri : tri_list)
+		{
+			float pt[] = { e->mouse_x, e->mouse_y };
+			if (point_is_inside_triangle(pt, tri))
+			{
+				selected = tri.id;
+			}
+			else
+			{
+				selected = 0;
+			}
+		}
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
