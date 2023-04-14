@@ -1,4 +1,5 @@
 #include "types.h"
+#include <math.h>
 
 void add_triangle(program_state_t *program)
 {
@@ -13,6 +14,9 @@ void add_triangle(program_state_t *program)
 	tri.color[2] = 1.0f;
 	tri.color[3] = 1.0f;
 	program->tri_list.insert({ tri.id, tri });
+	program->point_list.insert({ ++program->id_counter, tri.a });
+	program->point_list.insert({ ++program->id_counter, tri.b });
+	program->point_list.insert({ ++program->id_counter, tri.c });
 }
 
 // --------------------------------------------------------------------------------------------------------------------

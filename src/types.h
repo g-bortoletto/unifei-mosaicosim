@@ -67,6 +67,8 @@ typedef struct program_state_t
 
 	std::map<id_t, triangle_t> tri_list;
 
+	std::map<id_t, float *> point_list;
+
 } program_state_t;
 
 // --------------------------------------------------------------------------------------------------------------------
