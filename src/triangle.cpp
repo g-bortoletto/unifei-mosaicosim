@@ -91,3 +91,9 @@ void draw_triangles(const program_state_t *program)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+
+const float point_distance(const float *p1, const float *p2)
+{
+	float pr[] = { p2[0] - p1[0], p2[1] - p1[1] };
+	return sqrt(pr[0] * pr[0] + pr[1] * pr[1]);
+}
