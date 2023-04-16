@@ -4,6 +4,8 @@
 
 #include "image.h"
 
+#include "point.h"
+
 #include "triangle.h"
 
 #include "gui.h"
@@ -164,21 +166,24 @@ static void input(const sapp_event* e)
 {
 	simgui_handle_event(e);
 
-	bool is_cursor_inside_viewport = e->mouse_x > program.viewport_x && e->mouse_y > program.viewport_y;
+	program.is_mouse_in_viewport = e->mouse_x > program.viewport_x && e->mouse_y > program.viewport_y;
+	program.mouse_delta = { e->mouse_dx, e->mouse_dy };
+	program.mouse_position = { e->mouse_x, e->mouse_y };
 
 	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
 		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
 		program.is_mouse_left_down = true;
-		if (is_cursor_inside_viewport)
+		if (program.is_mouse_in_viewport)
 		{
+
+			program.last_selected = program.selected;
 			program.selected = 0;
-			for (auto tri : program.tri_list)
+			for (auto shape : program.shape_list)
 			{
-				float pt[] = { e->mouse_x, e->mouse_y };
-				if (point_is_inside_triangle(pt, tri.second))
+				if (point_is_inside_triangle(program.mouse_position, shape.second))
 				{
-					program.selected = tri.first;
+					program.selected = shape.first;
 				}
 			}
 		}
@@ -190,16 +195,45 @@ static void input(const sapp_event* e)
 		program.is_mouse_left_down = false;
 	}
 
-	if (is_cursor_inside_viewport &&
+	if (program.is_mouse_in_viewport &&
 		program.selected && 
 		program.is_mouse_left_down)
 	{
-		program.tri_list[program.selected].a[0] += e->mouse_dx;
-		program.tri_list[program.selected].b[0] += e->mouse_dx;
-		program.tri_list[program.selected].c[0] += e->mouse_dx;
-		program.tri_list[program.selected].a[1] += e->mouse_dy;
-		program.tri_list[program.selected].b[1] += e->mouse_dy;
-		program.tri_list[program.selected].c[1] += e->mouse_dy;
+		bool mouse_close_p0 = point_distance(
+			program.shape_list[program.selected].p[0], 
+			program.mouse_position) <= 20.0f;
+		bool mouse_close_p1 = point_distance(
+			program.shape_list[program.selected].p[1], 
+			program.mouse_position) <= 20.0f;
+		bool mouse_close_p2 = point_distance(
+			program.shape_list[program.selected].p[2], 
+			program.mouse_position) <= 20.0f;
+		if (program.last_selected == program.selected)
+		{
+			if (mouse_close_p0)
+			{
+				point_move(&program.shape_list[program.selected], 0, { e->mouse_dx, e->mouse_dy });
+			}
+			else if (mouse_close_p1)
+			{
+				point_move(&program.shape_list[program.selected], 1, { e->mouse_dx, e->mouse_dy });
+			}
+			else if (mouse_close_p2)
+			{
+				point_move(&program.shape_list[program.selected], 2, { e->mouse_dx, e->mouse_dy });
+			}
+		}
+		else
+		{
+			program.shape_list[program.selected].p[0].x += e->mouse_dx;
+			program.shape_list[program.selected].p[0].y += e->mouse_dy;
+			
+			program.shape_list[program.selected].p[1].x += e->mouse_dx;
+			program.shape_list[program.selected].p[1].y += e->mouse_dy;
+			
+			program.shape_list[program.selected].p[2].x += e->mouse_dx;
+			program.shape_list[program.selected].p[2].y += e->mouse_dy;
+		}
 	}
 
 	sapp_set_window_title(program.is_mouse_left_down ? "down" : "up");
