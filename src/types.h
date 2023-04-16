@@ -44,8 +44,18 @@ typedef struct program_state_t
 
 	bool is_mouse_left_down;
 
+	bool is_mouse_in_viewport;
+
+	point_t mouse_position;
+
+	point_t mouse_delta;
+
 	id_t id_counter;
 
+	id_t selected;
+
+	id_t last_selected;
+	
 	int main_menu_bar_height;
 
 	int side_bar_width = 200;
@@ -69,8 +79,6 @@ typedef struct program_state_t
 	sg_image main_image;
 
 	sg_pipeline pipeline;
-
-	id_t selected;
 
 	std::map<id_t, shape_t> shape_list;
 
