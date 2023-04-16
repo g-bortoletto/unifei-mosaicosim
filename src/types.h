@@ -13,22 +13,29 @@
 
 typedef unsigned long long id_t;
 
+typedef enum shape_e
+{
+	triangle = 0,
+	size
+} shape_e;
+
 // --------------------------------------------------------------------------------------------------------------------
 
-typedef struct triangle_t
 {
 
 	id_t id;
+typedef struct shape_t
+{
 	
-	float a[2];
+	id_t id;
 	
-	float b[2];
+	shape_e type;
 	
-	float c[2];
+	std::vector<point_t> p;
 	
-	float color[4];
+	color_t color;
 
-} triangle_t;
+} shape_t;
 
 // --------------------------------------------------------------------------------------------------------------------
 
