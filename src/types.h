@@ -73,6 +73,10 @@ typedef struct program_state_t
 
 	point_t mouse_delta;
 
+	bool shape_lock;
+
+	int point_lock = -1;
+
 	id_t id_counter;
 
 	id_t selected;

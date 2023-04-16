@@ -89,6 +89,18 @@ static void frame(void)
 	draw_side_bar(&program);
 	draw_main_image(&program);
 	draw_triangles(&program);
+	
+#ifdef DEBUG 
+	draw_debug_window(&program); 
+#endif
+
+	
+
+	// handle point movement
+	if (program.is_mouse_left_down && program.shape_lock && program.point_lock >= 0)
+	{
+		point_set(&program.shape_list[program.selected], program.point_lock, program.mouse_position);
+	}
 
 	sg_pass_action pass_action = { };
 	sg_begin_default_pass(&pass_action, program.window_width, program.window_height);
@@ -170,13 +182,15 @@ static void input(const sapp_event* e)
 	program.mouse_delta = { e->mouse_dx, e->mouse_dy };
 	program.mouse_position = { e->mouse_x, e->mouse_y };
 
+	if (!program.is_mouse_in_viewport) { program.is_mouse_left_down = false; }
+
+	// press left mouse button
 	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
 		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
 		program.is_mouse_left_down = true;
 		if (program.is_mouse_in_viewport)
 		{
-
 			program.last_selected = program.selected;
 			program.selected = 0;
 			for (auto shape : program.shape_list)
@@ -189,54 +203,67 @@ static void input(const sapp_event* e)
 		}
 	}
 
+	// release left mouse button
 	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
 		e->mouse_button ==SAPP_MOUSEBUTTON_LEFT)
 	{
 		program.is_mouse_left_down = false;
+		program.shape_lock = false;
+		program.point_lock = -1;
 	}
 
+	// handle shape movement
 	if (program.is_mouse_in_viewport &&
 		program.selected && 
 		program.is_mouse_left_down)
 	{
 		bool mouse_close_p0 = point_distance(
 			program.shape_list[program.selected].p[0], 
-			program.mouse_position) <= 20.0f;
+			program.mouse_position) <= 10.0f;
 		bool mouse_close_p1 = point_distance(
 			program.shape_list[program.selected].p[1], 
-			program.mouse_position) <= 20.0f;
+			program.mouse_position) <= 10.0f;
 		bool mouse_close_p2 = point_distance(
 			program.shape_list[program.selected].p[2], 
-			program.mouse_position) <= 20.0f;
+			program.mouse_position) <= 10.0f;
 		if (program.last_selected == program.selected)
 		{
 			if (mouse_close_p0)
 			{
-				point_move(&program.shape_list[program.selected], 0, { e->mouse_dx, e->mouse_dy });
+				program.shape_lock = true;
+				if (program.point_lock < 0) 
+				{ 
+					program.point_lock = 0; 
+				}
 			}
 			else if (mouse_close_p1)
 			{
-				point_move(&program.shape_list[program.selected], 1, { e->mouse_dx, e->mouse_dy });
+				program.shape_lock = true;
+				if (program.point_lock < 0) 
+				{ 
+					program.point_lock = 1; 
+				}
 			}
 			else if (mouse_close_p2)
 			{
-				point_move(&program.shape_list[program.selected], 2, { e->mouse_dx, e->mouse_dy });
+				program.shape_lock = true;
+				if (program.point_lock < 0) 
+				{ 
+					program.point_lock = 2; 
+				}
+			}
+			else
+			{
+				if (program.shape_lock) { return; }
+				triangle_move(&program.shape_list[program.selected], program.mouse_delta);
 			}
 		}
 		else
 		{
-			program.shape_list[program.selected].p[0].x += e->mouse_dx;
-			program.shape_list[program.selected].p[0].y += e->mouse_dy;
-			
-			program.shape_list[program.selected].p[1].x += e->mouse_dx;
-			program.shape_list[program.selected].p[1].y += e->mouse_dy;
-			
-			program.shape_list[program.selected].p[2].x += e->mouse_dx;
-			program.shape_list[program.selected].p[2].y += e->mouse_dy;
+			if (program.shape_lock) { return; }
+			triangle_move(&program.shape_list[program.selected], program.mouse_delta);
 		}
 	}
-
-	sapp_set_window_title(program.is_mouse_left_down ? "down" : "up");
 }
 
 // --------------------------------------------------------------------------------------------------------------------
