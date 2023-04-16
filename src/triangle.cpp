@@ -70,6 +70,15 @@ const bool point_is_inside_triangle(const point_t pt, const shape_t triangle)
     return !(has_neg && has_pos) || cp;
 }
 
+const void triangle_move(shape_t *tri, const point_t new_position)
+{
+	if (!tri) { return; }
+
+	point_move(tri, 0, new_position);
+	point_move(tri, 1, new_position);
+	point_move(tri, 2, new_position);
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 
 void draw_triangles(const program_state_t *program)
@@ -106,7 +115,7 @@ void draw_triangles(const program_state_t *program)
 			{
 				if (point_distance(
 					tri.second.p[0],
-					program->mouse_position) <= 20.0f)
+					program->mouse_position) <= 10.0f)
 				{
 					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
 					sgp_push_transform();
@@ -119,7 +128,7 @@ void draw_triangles(const program_state_t *program)
 				}
 				if (point_distance(
 					tri.second.p[1],
-					program->mouse_position) <= 20.0f)
+					program->mouse_position) <= 10.0f)
 				{
 					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
 					sgp_push_transform();
@@ -132,7 +141,7 @@ void draw_triangles(const program_state_t *program)
 				}
 				if (point_distance(
 					tri.second.p[2],
-					program->mouse_position) <= 20.0f)
+					program->mouse_position) <= 10.0f)
 				{
 					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
 					sgp_push_transform();
