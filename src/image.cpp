@@ -62,19 +62,6 @@ void draw_main_image(const program_state_t *program)
 			main_image_width, 
 			main_image_height);
 		sgp_reset_image(0);
-
-#ifdef DEBUG
-		if (ImGui::Begin("Main image debug"))
-		{
-			ImGui::Text("image width:     %f", main_image_width);
-			ImGui::Text("image height:    %f", main_image_height);
-			ImGui::Text("image ratio:     %f", image_ratio);
-			ImGui::Text("viewport width:  %d", viewport_width);
-			ImGui::Text("viewport height: %d", viewport_height);
-			ImGui::Text("viewport ratio:  %f", viewport_ratio);
-			ImGui::End();
-		}
-#endif
 	}
 }
 
