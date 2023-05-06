@@ -37,3 +37,15 @@ const void point_set(shape_t *shape, const int index, const sgp_vec2 new_positio
 		shape->p[index].y = new_position.y;
 	}
 }
+
+const void point_draw(const sgp_vec2 point, const float scale)
+{
+	if (sgp_is_valid())
+	{
+		sgp_draw_filled_rect(
+			point.x - 5.0f / scale, 
+			point.y - 5.0f / scale, 
+			10.0f / scale, 
+			10.0f / scale);
+	}
+}

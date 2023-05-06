@@ -45,12 +45,10 @@ typedef struct program_state_t
 
 	bool is_mouse_right_down;
 
-	bool is_mouse_in_viewport;
-
 	bool shape_lock;
 
 	bool draw_selection;
-	
+
 	sgp_vec2 mouse_position;
 
 	sgp_vec2 mouse_delta;

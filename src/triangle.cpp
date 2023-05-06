@@ -105,6 +105,7 @@ const void triangle_move(shape_t *tri, const sgp_vec2 new_position)
 
 void draw_triangles(const program_state_t *program)
 {
+	if (!sgp_is_valid()) { return; }
 	if (program->shape_list.empty()) { return; }
 	for (auto tri : program->shape_list)
 	{
@@ -131,40 +132,26 @@ void draw_triangles(const program_state_t *program)
 			}
 
 			// draw points if mouse is close to it
-			if (program->selected == tri.first)
+			if (program->selected == tri.first && 
+				point_is_inside_triangle(
+				{
+					.x = program->mouse_position.x,
+					.y = program->mouse_position.y
+				},
+				tri.second, 
+				30.0f / program->zoom))
 			{
-				if (point_distance(
-					tri.second.p[0],
-					program->mouse_position) <= 10.0f)
+				sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
+				for (auto p : tri.second.p)
 				{
-					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-					sgp_draw_filled_rect(
-						tri.second.p[0].x - 5.0f, 
-						tri.second.p[0].y - 5.0f, 
-						10.0f, 
-						10.0f);
-				}
-				if (point_distance(
-					tri.second.p[1],
-					program->mouse_position) <= 10.0f)
-				{
-					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-					sgp_draw_filled_rect(
-						tri.second.p[1].x - 5.0f, 
-						tri.second.p[1].y - 5.0f, 
-						10.0f, 
-						10.0f);
-				}
-				if (point_distance(
-					tri.second.p[2],
-					program->mouse_position) <= 10.0f)
-				{
-					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-					sgp_draw_filled_rect(
-						tri.second.p[2].x - 5.0f, 
-						tri.second.p[2].y - 5.0f, 
-						10.0f, 
-						10.0f);
+					if (point_distance(p, program->mouse_position) <= 20.0f / program->zoom)
+					{
+						sgp_draw_filled_rect(
+							p.x - 5.0f / program->zoom, 
+							p.y - 5.0f / program->zoom, 
+							10.0f / program->zoom, 
+							10.0f / program->zoom);
+					}
 				}
 			}
 			sgp_pop_transform();

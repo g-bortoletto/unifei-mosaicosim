@@ -62,6 +62,8 @@ using namespace std;
 
 global program_state_t program;
 
+static void shape_move();
+
 // --------------------------------------------------------------------------------------------------------------------
 
 static void frame(void) 
@@ -79,17 +81,24 @@ static void frame(void)
 	program.viewport_ratio = program.viewport_width / (float)program.viewport_height;
 
 	sgp_begin(program.window_width, program.window_height);
+	sgp_viewport(
+		program.viewport_x,
+		program.viewport_y,
+		program.viewport_width,
+		program.viewport_height);
 	simgui_new_frame({ program.window_width, program.window_height, sapp_frame_duration(), sapp_dpi_scale() });
 
 	sgp_set_color(0.05f, 0.05f, 0.05f, 1.0f);
 	sgp_clear();
 	sgp_reset_color();
 
+	shape_move();
 	if (program.is_mouse_right_down && program.is_mouse_moving)
 	{
 		program.offset = { program.offset.x + program.mouse_delta.x, program.offset.y + program.mouse_delta.y };
 	}
 	sgp_translate(program.offset.x, program.offset.y);
+	
 	program.mouse_delta = { 0 };
 
 	// draw_main_menu_bar(&program);
@@ -138,26 +147,26 @@ static void left_mouse_down(const sapp_event *e)
 		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
 		program.is_mouse_left_down = true;
-		if (program.is_mouse_in_viewport)
+		program.last_selected = program.selected;
+		program.selected = 0;
+		for (auto shape : program.shape_list)
 		{
-			program.last_selected = program.selected;
-			program.selected = 0;
-			for (auto shape : program.shape_list)
+			bool is_point_inside_triangle = 
+			point_is_inside_triangle(program.mouse_position, shape.second, 30.0f / program.zoom);
+			if (is_point_inside_triangle)
 			{
-				if (point_is_inside_triangle(program.mouse_position, shape.second))
-				{
-					program.selected = shape.first;
-				}
+				program.selected = shape.first;
 			}
-			if (!program.selected && !program.draw_selection)
-			{
-				program.draw_selection = true;
-				program.selection.x = (e->mouse_x - program.offset.x) / program.zoom;
-				program.selection.y = (e->mouse_y - program.offset.y) / program.zoom;
-			}
+		}
+		if (!program.selected && !program.draw_selection)
+		{
+			program.draw_selection = true;
+			program.selection.x = ((e->mouse_x - program.offset.x - 200.0f) / program.zoom);
+			program.selection.y = (e->mouse_y - program.offset.y) / program.zoom;
 		}
 	}
 
+	// set selection
 	program.selection.w = program.mouse_position.x - program.selection.x;
 	program.selection.h = program.mouse_position.y - program.selection.y;
 }
@@ -207,40 +216,18 @@ static void mouse_wheel(const sapp_event *e)
 			program.zoom -= 0.1f;
 		}
 	}
+
+	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN &&
+		e->mouse_button == SAPP_MOUSEBUTTON_MIDDLE)
+	{
+		program.offset = { 0 };
+		program.zoom = 1.0f;
+	}
 }
 
-static void input(const sapp_event* e) 
+static void shape_move()
 {
-	simgui_handle_event(e);
-
-	program.mouse_delta = { e->mouse_dx / program.zoom, e->mouse_dy / program.zoom };
-	program.mouse_position = 
-	{ 
-		.x = (e->mouse_x - program.offset.x) / program.zoom, 
-		.y = (e->mouse_y - program.offset.y) / program.zoom
-	};
-	program.is_mouse_in_viewport = 
-		program.mouse_position.x > program.viewport_x && 
-		program.mouse_position.y > program.viewport_y;
-	program.is_mouse_moving = 
-		program.mouse_delta.x != 0 ||
-		program.mouse_delta.y != 0;
-
-	if (!program.is_mouse_in_viewport) { program.is_mouse_left_down = false; }
-	
-	right_mouse_down(e);
-	
-	right_mouse_up(e);
-
-	left_mouse_down(e);
-
-	left_mouse_up(e);
-
-	mouse_wheel(e);
-
-	// handle shape movement
-	if (program.is_mouse_in_viewport &&
-		program.selected && 
+	if (program.selected && 
 		program.is_mouse_left_down)
 	{
 		if (program.last_selected == program.selected)
@@ -287,6 +274,32 @@ static void input(const sapp_event* e)
 			triangle_move(&program.shape_list[program.selected], program.mouse_delta);
 		}
 	}
+}
+
+static void input(const sapp_event* e) 
+{
+	simgui_handle_event(e);
+
+	program.mouse_delta = { e->mouse_dx / program.zoom, e->mouse_dy / program.zoom };
+	program.mouse_position = 
+	{ 
+		.x = ((e->mouse_x - program.offset.x - 200.0f) / program.zoom), 
+		.y = (e->mouse_y - program.offset.y) / program.zoom
+	};
+	program.is_mouse_moving = 
+		program.mouse_delta.x != 0 ||
+		program.mouse_delta.y != 0;
+
+	right_mouse_down(e);
+	
+	right_mouse_up(e);
+
+	left_mouse_down(e);
+
+	left_mouse_up(e);
+
+	mouse_wheel(e);
+
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -363,7 +376,7 @@ sapp_desc sokol_main(int argc, char* argv[])
 	desc.frame_cb = frame;
 	desc.cleanup_cb = cleanup;
 	desc.event_cb = input;
-	desc.sample_count = 4;
+	desc.sample_count = 8;
 	desc.width = 1280;
 	desc.height = 720;
 	desc.high_dpi = true;

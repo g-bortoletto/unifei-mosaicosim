@@ -48,7 +48,6 @@ void draw_debug_window(program_state_t *program)
 		ImGui::Text("is_mouse_moving: %s", program->is_mouse_moving ? "true" : "false");
 		ImGui::Text("is_mouse_left_down: %s", program->is_mouse_left_down ? "true" : "false");
 		ImGui::Text("is_mouse_right_down: %s", program->is_mouse_right_down ? "true" : "false");
-		ImGui::Text("is_mouse_in_viewport: %s", program->is_mouse_in_viewport ? "true" : "false");
 		ImGui::Text("mouse_position: (%.2f, %.2f)", program->mouse_position.x, program->mouse_position.y);
 		ImGui::Text("mouse_delta: (%.2f, %.2f)", program->mouse_delta.x, program->mouse_delta.y);
 		ImGui::Text("shape_lock: %s", program->shape_lock ? "true" : "false");

@@ -20,6 +20,8 @@ const void point_move(shape_t *triangle, const int index, const sgp_vec2 amount)
 
 const void point_set(shape_t *teiangle, const int index, const sgp_vec2 new_position);
 
+const void point_draw(const sgp_vec2 point, const float scale = 1.0f);
+
 const sgp_vec2 operator-(const sgp_vec2 other);
 
 // --------------------------------------------------------------------------------------------------------------------
