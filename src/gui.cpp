@@ -38,13 +38,16 @@ void draw_main_menu_bar(program_state_t *program)
 	}
 }
 
-void draw_debug_window(const program_state_t *program)
+void draw_debug_window(program_state_t *program)
 {
 	ImGui::SetNextWindowPos(ImVec2(program->viewport_x, program->viewport_y));
 	ImGui::SetNextWindowSize(ImVec2(200, 0));
 	if (ImGui::Begin("Debug Window"))
 	{
+		ImGui::Text("frame_time: %.6f", sapp_frame_duration());
+		ImGui::Text("is_mouse_moving: %s", program->is_mouse_moving ? "true" : "false");
 		ImGui::Text("is_mouse_left_down: %s", program->is_mouse_left_down ? "true" : "false");
+		ImGui::Text("is_mouse_right_down: %s", program->is_mouse_right_down ? "true" : "false");
 		ImGui::Text("is_mouse_in_viewport: %s", program->is_mouse_in_viewport ? "true" : "false");
 		ImGui::Text("mouse_position: (%.2f, %.2f)", program->mouse_position.x, program->mouse_position.y);
 		ImGui::Text("mouse_delta: (%.2f, %.2f)", program->mouse_delta.x, program->mouse_delta.y);
@@ -53,6 +56,13 @@ void draw_debug_window(const program_state_t *program)
 		ImGui::Text("id_counter: %lld", program->id_counter);
 		ImGui::Text("selected: %lld", program->selected);
 		ImGui::Text("last_selected: %lld", program->last_selected);
+		ImGui::Text(
+			"selection:\n\tx: %.1f\n\ty: %.1f\n\tw: %.1f\n\th: %.1f", 
+			program->selection.x,
+			program->selection.y,
+			program->selection.w,
+			program->selection.h);
+		ImGui::Text("draw_selection: %s", program->draw_selection ? "true" : "false");
 		ImGui::Text("main_menu_bar_height: %d", program->main_menu_bar_height);
 		ImGui::Text("side_bar_width: %d", program->side_bar_width);
 		ImGui::Text(
@@ -67,6 +77,8 @@ void draw_debug_window(const program_state_t *program)
 		ImGui::Text("viewport_size: (%d, %d)", program->viewport_width,program->viewport_height);
 		ImGui::Text("viewport_ratio: %.2f", program->viewport_ratio);
 		ImGui::Text("shape_list.size(): %lld", program->shape_list.size());
+		ImGui::Text("offset: (%2f, %2f)", program->offset.x, program->offset.y);
+		ImGui::InputFloat("zoom", &program->zoom, 0.1f, 1.0f);
 		ImGui::End();
 	}
 }
@@ -85,7 +97,7 @@ void draw_side_bar(program_state_t *program)
 |       ImGuiWindowFlags_NoTitleBar))
 	{
 		if (ImGui::Button("Carregar imagem", ImVec2(185.0f, 0.0f)))     { open_image(&program->main_image); }
-		if (ImGui::Button("Adicionar triângulo", ImVec2(185.0f, 0.0f))) { add_triangle(program); }		
+		if (ImGui::Button("Adicionar triângulo", ImVec2(185.0f, 0.0f))) { add_triangle(program); }	
 		if (program->shape_list.contains(program->selected))
 		{
 			float np0[2] = { program->shape_list[program->selected].p[0].x, program->shape_list[program->selected].p[0].y };
@@ -124,3 +136,8 @@ void draw_side_bar(program_state_t *program)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+
+void draw_selection(const program_state_t *program)
+{
+	
+}

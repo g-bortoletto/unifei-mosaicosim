@@ -46,7 +46,24 @@ const static float sign(const float *p1, const float *p2, const float *p3)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-const bool point_is_inside_triangle(const point_t pt, const shape_t triangle)
+const bool triangle_is_inside_rect(const shape_t *triangle, const sgp_rect rect)
+{
+	for (auto point : triangle->p)
+	{
+		if (point.x >= rect.x &&
+			point.x <= rect.w &&
+			point.y >= rect.y &&
+			point.y <= rect.h)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+const bool point_is_inside_triangle(const sgp_vec2 pt, const shape_t triangle, const float point_tolerance)
 {
     float d1, d2, d3;
     bool has_neg, has_pos;
@@ -62,15 +79,20 @@ const bool point_is_inside_triangle(const point_t pt, const shape_t triangle)
     has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
     has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
-    bool cp0 = point_distance(pt, triangle.p[0]) <= 20.0f;
-    bool cp1 = point_distance(pt, triangle.p[1]) <= 20.0f;
-    bool cp2 = point_distance(pt, triangle.p[2]) <= 20.0f;
-    bool cp = cp0 || cp1 || cp2;
+    bool is_inside = !(has_neg && has_pos);
 
-    return !(has_neg && has_pos) || cp;
+    if (is_inside)
+    { 
+    	bool cp0 = point_distance(pt, triangle.p[0]) <= point_tolerance;
+    	bool cp1 = point_distance(pt, triangle.p[1]) <= point_tolerance;
+    	bool cp2 = point_distance(pt, triangle.p[2]) <= point_tolerance;
+    	bool cp = cp0 || cp1 || cp2;
+    	return is_inside || cp;
+	}
+	return false;
 }
 
-const void triangle_move(shape_t *tri, const point_t new_position)
+const void triangle_move(shape_t *tri, const sgp_vec2 new_position)
 {
 	if (!tri) { return; }
 
@@ -88,14 +110,14 @@ void draw_triangles(const program_state_t *program)
 	{
 		if (tri.second.type == shape_e::triangle)
 		{
+			sgp_push_transform();
 			// draw filled triangle
 			sgp_set_color(tri.second.color.r, tri.second.color.g, tri.second.color.b, tri.second.color.a);
-			sgp_push_transform();
+			sgp_scale(program->zoom, program->zoom);
 			sgp_draw_filled_triangle(
 				tri.second.p[0].x, tri.second.p[0].y,
 				tri.second.p[1].x, tri.second.p[1].y,
 				tri.second.p[2].x, tri.second.p[2].y);
-			sgp_pop_transform();
 			
 			// draw selection line
 			sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -103,11 +125,9 @@ void draw_triangles(const program_state_t *program)
 			float hps = ps * 0.5f;
 			if (program->selected == tri.second.id)
 			{
-				sgp_push_transform();
 				sgp_draw_line(tri.second.p[0].x, tri.second.p[0].y, tri.second.p[1].x, tri.second.p[1].y);
 				sgp_draw_line(tri.second.p[0].x, tri.second.p[0].y, tri.second.p[2].x, tri.second.p[2].y);
 				sgp_draw_line(tri.second.p[1].x, tri.second.p[1].y, tri.second.p[2].x, tri.second.p[2].y);
-				sgp_pop_transform();
 			}
 
 			// draw points if mouse is close to it
@@ -118,41 +138,36 @@ void draw_triangles(const program_state_t *program)
 					program->mouse_position) <= 10.0f)
 				{
 					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-					sgp_push_transform();
 					sgp_draw_filled_rect(
 						tri.second.p[0].x - 5.0f, 
 						tri.second.p[0].y - 5.0f, 
 						10.0f, 
 						10.0f);
-					sgp_pop_transform();
 				}
 				if (point_distance(
 					tri.second.p[1],
 					program->mouse_position) <= 10.0f)
 				{
 					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-					sgp_push_transform();
 					sgp_draw_filled_rect(
 						tri.second.p[1].x - 5.0f, 
 						tri.second.p[1].y - 5.0f, 
 						10.0f, 
 						10.0f);
-					sgp_pop_transform();
 				}
 				if (point_distance(
 					tri.second.p[2],
 					program->mouse_position) <= 10.0f)
 				{
 					sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
-					sgp_push_transform();
 					sgp_draw_filled_rect(
 						tri.second.p[2].x - 5.0f, 
 						tri.second.p[2].y - 5.0f, 
 						10.0f, 
 						10.0f);
-					sgp_pop_transform();
 				}
 			}
+			sgp_pop_transform();
 		}
 	}
 }

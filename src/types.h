@@ -21,32 +21,6 @@ typedef enum shape_e
 
 // --------------------------------------------------------------------------------------------------------------------
 
-typedef struct point_t
-{
-	
-	float x;
-	
-	float y;
-
-} point_t;
-
-// --------------------------------------------------------------------------------------------------------------------
-
-typedef struct color_t
-{
-
-	float r;
-	
-	float g;
-	
-	float b;
-	
-	float a;
-
-} color_t;
-
-// --------------------------------------------------------------------------------------------------------------------
-
 typedef struct shape_t
 {
 	
@@ -54,9 +28,9 @@ typedef struct shape_t
 	
 	shape_e type;
 	
-	std::vector<point_t> p;
+	std::vector<sgp_vec2> p;
 	
-	color_t color;
+	sgp_color color;
 
 } shape_t;
 
@@ -65,23 +39,31 @@ typedef struct shape_t
 typedef struct program_state_t
 {
 
+	bool is_mouse_moving;
+
 	bool is_mouse_left_down;
+
+	bool is_mouse_right_down;
 
 	bool is_mouse_in_viewport;
 
-	point_t mouse_position;
-
-	point_t mouse_delta;
-
 	bool shape_lock;
 
-	int point_lock = -1;
+	bool draw_selection;
+	
+	sgp_vec2 mouse_position;
+
+	sgp_vec2 mouse_delta;
+
+	sgp_rect selection;
 
 	id_t id_counter;
 
 	id_t selected;
 
 	id_t last_selected;
+
+	int point_lock = -1;
 	
 	int main_menu_bar_height;
 
@@ -91,8 +73,6 @@ typedef struct program_state_t
 
 	int window_height;
 
-	float window_ratio;
-
 	int viewport_x;
 
 	int viewport_y;
@@ -101,7 +81,13 @@ typedef struct program_state_t
 
 	int viewport_height;
 
+	float zoom;
+
+	float window_ratio;
+
 	float viewport_ratio;
+
+	sgp_vec2 offset;
 
 	sg_image main_image;
 

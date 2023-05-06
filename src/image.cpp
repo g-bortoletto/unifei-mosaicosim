@@ -56,12 +56,15 @@ void draw_main_image(const program_state_t *program)
 		sgp_set_image(0, program->main_image);
 		float main_image_width = program->viewport_ratio <= image_ratio ? program->viewport_width : (program->viewport_height * (float)image_ratio);
 		float main_image_height = program->viewport_ratio > image_ratio ? program->viewport_height : (program->viewport_width / (float)image_ratio);
+		sgp_push_transform();
+		sgp_scale(program->zoom, program->zoom);
 		sgp_draw_textured_rect(
 			program->viewport_x, 
 			program->viewport_y, 
 			main_image_width, 
 			main_image_height);
 		sgp_reset_image(0);
+		sgp_pop_transform();
 	}
 }
 

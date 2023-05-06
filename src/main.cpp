@@ -85,16 +85,33 @@ static void frame(void)
 	sgp_clear();
 	sgp_reset_color();
 
-	draw_main_menu_bar(&program);
+	if (program.is_mouse_right_down && program.is_mouse_moving)
+	{
+		program.offset = { program.offset.x + program.mouse_delta.x, program.offset.y + program.mouse_delta.y };
+	}
+	sgp_translate(program.offset.x, program.offset.y);
+	program.mouse_delta = { 0 };
+
+	// draw_main_menu_bar(&program);
 	draw_side_bar(&program);
 	draw_main_image(&program);
 	draw_triangles(&program);
+	if (program.draw_selection)
+	{
+		sgp_set_blend_mode(SGP_BLENDMODE_BLEND);
+		sgp_set_color(100 / 255.0f, 149 / 255.0f, 237 / 255.0f, 0.6f);
+		sgp_draw_filled_rect(
+			program.selection.x * program.zoom, 
+			program.selection.y * program.zoom, 
+			program.selection.w * program.zoom, 
+			program.selection.h * program.zoom);
+		sgp_set_blend_mode(SGP_BLENDMODE_NONE);
+	}
+	// draw_selection(&program);
 	
 #ifdef DEBUG 
 	draw_debug_window(&program); 
 #endif
-
-	
 
 	// handle point movement
 	if (program.is_mouse_left_down && program.shape_lock && program.point_lock >= 0)
@@ -114,8 +131,171 @@ static void frame(void)
 
 // --------------------------------------------------------------------------------------------------------------------
 
+static void left_mouse_down(const sapp_event *e)
+{
+	// press left mouse button
+	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
+		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
+	{
+		program.is_mouse_left_down = true;
+		if (program.is_mouse_in_viewport)
+		{
+			program.last_selected = program.selected;
+			program.selected = 0;
+			for (auto shape : program.shape_list)
+			{
+				if (point_is_inside_triangle(program.mouse_position, shape.second))
+				{
+					program.selected = shape.first;
+				}
+			}
+			if (!program.selected && !program.draw_selection)
+			{
+				program.draw_selection = true;
+				program.selection.x = (e->mouse_x - program.offset.x) / program.zoom;
+				program.selection.y = (e->mouse_y - program.offset.y) / program.zoom;
+			}
+		}
+	}
+
+	program.selection.w = program.mouse_position.x - program.selection.x;
+	program.selection.h = program.mouse_position.y - program.selection.y;
+}
+
+static void left_mouse_up(const sapp_event *e)
+{
+	// release left mouse button
+	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
+		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
+	{
+		program.is_mouse_left_down = false;
+		program.shape_lock = false;
+		program.draw_selection = false;
+		program.point_lock = -1;
+	}
+}
+
+static void right_mouse_down(const sapp_event *e)
+{
+	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN &&
+		e->mouse_button == SAPP_MOUSEBUTTON_RIGHT)
+	{
+		program.is_mouse_right_down = true;
+	}
+}
+
+static void right_mouse_up(const sapp_event *e)
+{
+	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
+		e->mouse_button == SAPP_MOUSEBUTTON_RIGHT)
+	{
+		program.is_mouse_right_down = false;
+	}
+}
+
+static void mouse_wheel(const sapp_event *e)
+{
+	if (e->type == SAPP_EVENTTYPE_MOUSE_SCROLL)
+	{
+		if (e->scroll_y > 0)
+		{
+			program.zoom += 0.1f;
+		}
+	
+		if (e->scroll_y < 0)
+		{
+			program.zoom -= 0.1f;
+		}
+	}
+}
+
+static void input(const sapp_event* e) 
+{
+	simgui_handle_event(e);
+
+	program.mouse_delta = { e->mouse_dx / program.zoom, e->mouse_dy / program.zoom };
+	program.mouse_position = 
+	{ 
+		.x = (e->mouse_x - program.offset.x) / program.zoom, 
+		.y = (e->mouse_y - program.offset.y) / program.zoom
+	};
+	program.is_mouse_in_viewport = 
+		program.mouse_position.x > program.viewport_x && 
+		program.mouse_position.y > program.viewport_y;
+	program.is_mouse_moving = 
+		program.mouse_delta.x != 0 ||
+		program.mouse_delta.y != 0;
+
+	if (!program.is_mouse_in_viewport) { program.is_mouse_left_down = false; }
+	
+	right_mouse_down(e);
+	
+	right_mouse_up(e);
+
+	left_mouse_down(e);
+
+	left_mouse_up(e);
+
+	mouse_wheel(e);
+
+	// handle shape movement
+	if (program.is_mouse_in_viewport &&
+		program.selected && 
+		program.is_mouse_left_down)
+	{
+		if (program.last_selected == program.selected)
+		{
+			if (point_distance(
+			program.shape_list[program.selected].p[0], 
+			program.mouse_position) <= 10.0f)
+			{
+				program.shape_lock = true;
+				if (program.point_lock < 0) 
+				{ 
+					program.point_lock = 0; 
+				}
+			}
+			else if (point_distance(
+			program.shape_list[program.selected].p[1], 
+			program.mouse_position) <= 10.0f)
+			{
+				program.shape_lock = true;
+				if (program.point_lock < 0) 
+				{ 
+					program.point_lock = 1; 
+				}
+			}
+			else if (point_distance(
+			program.shape_list[program.selected].p[2], 
+			program.mouse_position) <= 10.0f)
+			{
+				program.shape_lock = true;
+				if (program.point_lock < 0) 
+				{ 
+					program.point_lock = 2; 
+				}
+			}
+			else
+			{
+				if (program.shape_lock) { return; }
+				triangle_move(&program.shape_list[program.selected], program.mouse_delta);
+			}
+		}
+		else
+		{
+			if (program.shape_lock) { return; }
+			triangle_move(&program.shape_list[program.selected], program.mouse_delta);
+		}
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 static void init(void) 
 {
+	program.zoom = 1.0f;
+	program.offset = { .x = 0.0f, .y = 0.0f };
+
 	// setup sokol-gfx and sokol-time
 	sg_desc desc = { };
 	desc.context = sapp_sgcontext();
@@ -174,100 +354,6 @@ static void cleanup(void)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static void input(const sapp_event* e) 
-{
-	simgui_handle_event(e);
-
-	program.is_mouse_in_viewport = e->mouse_x > program.viewport_x && e->mouse_y > program.viewport_y;
-	program.mouse_delta = { e->mouse_dx, e->mouse_dy };
-	program.mouse_position = { e->mouse_x, e->mouse_y };
-
-	if (!program.is_mouse_in_viewport) { program.is_mouse_left_down = false; }
-
-	// press left mouse button
-	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
-		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
-	{
-		program.is_mouse_left_down = true;
-		if (program.is_mouse_in_viewport)
-		{
-			program.last_selected = program.selected;
-			program.selected = 0;
-			for (auto shape : program.shape_list)
-			{
-				if (point_is_inside_triangle(program.mouse_position, shape.second))
-				{
-					program.selected = shape.first;
-				}
-			}
-		}
-	}
-
-	// release left mouse button
-	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
-		e->mouse_button ==SAPP_MOUSEBUTTON_LEFT)
-	{
-		program.is_mouse_left_down = false;
-		program.shape_lock = false;
-		program.point_lock = -1;
-	}
-
-	// handle shape movement
-	if (program.is_mouse_in_viewport &&
-		program.selected && 
-		program.is_mouse_left_down)
-	{
-		bool mouse_close_p0 = point_distance(
-			program.shape_list[program.selected].p[0], 
-			program.mouse_position) <= 10.0f;
-		bool mouse_close_p1 = point_distance(
-			program.shape_list[program.selected].p[1], 
-			program.mouse_position) <= 10.0f;
-		bool mouse_close_p2 = point_distance(
-			program.shape_list[program.selected].p[2], 
-			program.mouse_position) <= 10.0f;
-		if (program.last_selected == program.selected)
-		{
-			if (mouse_close_p0)
-			{
-				program.shape_lock = true;
-				if (program.point_lock < 0) 
-				{ 
-					program.point_lock = 0; 
-				}
-			}
-			else if (mouse_close_p1)
-			{
-				program.shape_lock = true;
-				if (program.point_lock < 0) 
-				{ 
-					program.point_lock = 1; 
-				}
-			}
-			else if (mouse_close_p2)
-			{
-				program.shape_lock = true;
-				if (program.point_lock < 0) 
-				{ 
-					program.point_lock = 2; 
-				}
-			}
-			else
-			{
-				if (program.shape_lock) { return; }
-				triangle_move(&program.shape_list[program.selected], program.mouse_delta);
-			}
-		}
-		else
-		{
-			if (program.shape_lock) { return; }
-			triangle_move(&program.shape_list[program.selected], program.mouse_delta);
-		}
-	}
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-
 sapp_desc sokol_main(int argc, char* argv[]) 
 {
 	(void)argc;
@@ -277,14 +363,12 @@ sapp_desc sokol_main(int argc, char* argv[])
 	desc.frame_cb = frame;
 	desc.cleanup_cb = cleanup;
 	desc.event_cb = input;
+	desc.sample_count = 4;
 	desc.width = 1280;
 	desc.height = 720;
 	desc.high_dpi = true;
-	desc.ios_keyboard_resizes_canvas = false;
-	desc.gl_force_gles2 = true;
 	desc.window_title = "tfg";
 	desc.icon.sokol_default = true;
 	desc.enable_clipboard = true;
-	desc.logger.func = slog_func;
 	return desc;
 }
