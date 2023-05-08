@@ -8,6 +8,8 @@ set COMPILER_FLAGS=-g -std=c++20
 set LINKER_FLAGS= -nodefaultlibs -fuse-ld=lld -fms-runtime-lib=static -lole32
 set BASE_FILES=%SOURCE_DIR%\*.cpp
 
+cd %PROJECT_DIR%
+
 if exist bin rmdir /S /Q bin
 
 mkdir bin
@@ -15,8 +17,8 @@ mkdir bin
 pushd bin
 cls
 if "%1"=="-r" (
-	clang++ %BASE_FILES% -O3 -std=c++20 %LINKER_FLAGS% -o program.exe) else (
-	clang++ -D DEBUG %BASE_FILES% %COMPILER_FLAGS% %LINKER_FLAGS%  -o program.exe)
+	clang++ %BASE_FILES% -O3 -std=c++20 %LINKER_FLAGS% -o tfg.exe) else (
+	clang++ -D DEBUG %BASE_FILES% %COMPILER_FLAGS% %LINKER_FLAGS%  -o tfg.exe)
 popd
 
 echo 

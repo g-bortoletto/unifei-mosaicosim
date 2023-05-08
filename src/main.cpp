@@ -1,14 +1,12 @@
-// --------------------------------------------------------------------------------------------------------------------
-
 #include "types.h"
+
+#include "gui.h"
 
 #include "image.h"
 
-#include "point.h"
+#include "input.h"
 
-#include "triangle.h"
-
-#include "gui.h"
+#include "shape.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -48,88 +46,76 @@
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <string.h>
-
-#include <vector>
-
-using namespace std;
+static program_state program;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#define global static
+static void init();
+
+static void frame();
+
+static void cleanup();
+
+static void input(const sapp_event *e);
+
+static void viewport_translate();
+
+static void viewport_scale();
 
 // --------------------------------------------------------------------------------------------------------------------
 
-global program_state_t program;
-
-static void shape_move();
-
-// --------------------------------------------------------------------------------------------------------------------
-
-static void frame(void) 
+static void frame()
 {
 	// update window size
-	program.window_width = sapp_width();
-	program.window_height = sapp_height();
-	program.window_ratio = program.window_width / (float)program.window_height;
+	program.window.width = sapp_width();
+	program.window.height = sapp_height();
+	program.window.ratio = program.window.width / (float)program.window.height;
 
 	// update viewport size
-	program.viewport_x = program.side_bar_width;
-	program.viewport_y = program.main_menu_bar_height;
-	program.viewport_width = program.window_width - program.side_bar_width;
-	program.viewport_height = program.window_height - program.main_menu_bar_height;
-	program.viewport_ratio = program.viewport_width / (float)program.viewport_height;
+	program.viewport =
+	{
+		.x = 200,
+		.y = 0,
+		.w = program.window.width - 200,
+		.h = program.window.height
+	};
+	program.viewport.ratio = program.viewport.w / (float)program.viewport.h;
 
-	sgp_begin(program.window_width, program.window_height);
+	program.mouse.is_moving = program.mouse.delta.x != 0 || program.mouse.delta.y != 0;
+
+	sgp_begin(program.window.width, program.window.height);
 	sgp_viewport(
-		program.viewport_x,
-		program.viewport_y,
-		program.viewport_width,
-		program.viewport_height);
-	simgui_new_frame({ program.window_width, program.window_height, sapp_frame_duration(), sapp_dpi_scale() });
+		program.viewport.x,
+		program.viewport.y,
+		program.viewport.w,
+		program.viewport.h);
+	simgui_new_frame({ program.window.width, program.window.height, sapp_frame_duration(), sapp_dpi_scale() });
 
 	sgp_set_color(0.05f, 0.05f, 0.05f, 1.0f);
 	sgp_clear();
 	sgp_reset_color();
 
-	shape_move();
-	if (program.is_mouse_right_down && program.is_mouse_moving)
-	{
-		program.offset = { program.offset.x + program.mouse_delta.x, program.offset.y + program.mouse_delta.y };
-	}
-	sgp_translate(program.offset.x, program.offset.y);
+	viewport_translate();
+	viewport_scale();
 	
-	program.mouse_delta = { 0 };
+	// gui
+	side_bar_draw(&program);
+	
+	// main image
+	main_image_draw(&program);
 
-	// draw_main_menu_bar(&program);
-	draw_side_bar(&program);
-	draw_main_image(&program);
-	draw_triangles(&program);
-	if (program.draw_selection)
-	{
-		sgp_set_blend_mode(SGP_BLENDMODE_BLEND);
-		sgp_set_color(100 / 255.0f, 149 / 255.0f, 237 / 255.0f, 0.6f);
-		sgp_draw_filled_rect(
-			program.selection.x * program.zoom, 
-			program.selection.y * program.zoom, 
-			program.selection.w * program.zoom, 
-			program.selection.h * program.zoom);
-		sgp_set_blend_mode(SGP_BLENDMODE_NONE);
-	}
-	// draw_selection(&program);
-	
-#ifdef DEBUG 
-	draw_debug_window(&program); 
+	// shapes
+	triangles_update(&program);
+	triangles_draw(&program);
+
+#ifdef DEBUG
+	debug_window_draw(&program);
 #endif
 
-	// handle point movement
-	if (program.is_mouse_left_down && program.shape_lock && program.point_lock >= 0)
-	{
-		point_set(&program.shape_list[program.selected], program.point_lock, program.mouse_position);
-	}
-
-	sg_pass_action pass_action = { };
-	sg_begin_default_pass(&pass_action, program.window_width, program.window_height);
+	program.mouse.delta = {};
+	program.mouse.scroll = 0;
+	sg_pass_action pass_action = {};
+	sg_begin_default_pass(&pass_action, program.window.width, program.window.height);
 	sgp_reset_pipeline();
 	sgp_flush();
 	sgp_end();
@@ -138,187 +124,28 @@ static void frame(void)
 	sg_commit();
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-
-static void left_mouse_down(const sapp_event *e)
-{
-	// press left mouse button
-	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN && 
-		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
-	{
-		program.is_mouse_left_down = true;
-		program.last_selected = program.selected;
-		program.selected = 0;
-		for (auto shape : program.shape_list)
-		{
-			bool is_point_inside_triangle = 
-			point_is_inside_triangle(program.mouse_position, shape.second, 30.0f / program.zoom);
-			if (is_point_inside_triangle)
-			{
-				program.selected = shape.first;
-			}
-		}
-		if (!program.selected && !program.draw_selection)
-		{
-			program.draw_selection = true;
-			program.selection.x = ((e->mouse_x - program.offset.x - 200.0f) / program.zoom);
-			program.selection.y = (e->mouse_y - program.offset.y) / program.zoom;
-		}
-	}
-
-	// set selection
-	program.selection.w = program.mouse_position.x - program.selection.x;
-	program.selection.h = program.mouse_position.y - program.selection.y;
-}
-
-static void left_mouse_up(const sapp_event *e)
-{
-	// release left mouse button
-	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
-		e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
-	{
-		program.is_mouse_left_down = false;
-		program.shape_lock = false;
-		program.draw_selection = false;
-		program.point_lock = -1;
-	}
-}
-
-static void right_mouse_down(const sapp_event *e)
-{
-	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN &&
-		e->mouse_button == SAPP_MOUSEBUTTON_RIGHT)
-	{
-		program.is_mouse_right_down = true;
-	}
-}
-
-static void right_mouse_up(const sapp_event *e)
-{
-	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
-		e->mouse_button == SAPP_MOUSEBUTTON_RIGHT)
-	{
-		program.is_mouse_right_down = false;
-	}
-}
-
-static void mouse_wheel(const sapp_event *e)
-{
-	if (e->type == SAPP_EVENTTYPE_MOUSE_SCROLL)
-	{
-		if (e->scroll_y > 0)
-		{
-			program.zoom += 0.1f;
-		}
-	
-		if (e->scroll_y < 0)
-		{
-			program.zoom -= 0.1f;
-		}
-	}
-
-	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN &&
-		e->mouse_button == SAPP_MOUSEBUTTON_MIDDLE)
-	{
-		program.offset = { 0 };
-		program.zoom = 1.0f;
-	}
-}
-
-static void shape_move()
-{
-	if (program.selected && 
-		program.is_mouse_left_down)
-	{
-		if (program.last_selected == program.selected)
-		{
-			if (point_distance(
-			program.shape_list[program.selected].p[0], 
-			program.mouse_position) <= 10.0f)
-			{
-				program.shape_lock = true;
-				if (program.point_lock < 0) 
-				{ 
-					program.point_lock = 0; 
-				}
-			}
-			else if (point_distance(
-			program.shape_list[program.selected].p[1], 
-			program.mouse_position) <= 10.0f)
-			{
-				program.shape_lock = true;
-				if (program.point_lock < 0) 
-				{ 
-					program.point_lock = 1; 
-				}
-			}
-			else if (point_distance(
-			program.shape_list[program.selected].p[2], 
-			program.mouse_position) <= 10.0f)
-			{
-				program.shape_lock = true;
-				if (program.point_lock < 0) 
-				{ 
-					program.point_lock = 2; 
-				}
-			}
-			else
-			{
-				if (program.shape_lock) { return; }
-				triangle_move(&program.shape_list[program.selected], program.mouse_delta);
-			}
-		}
-		else
-		{
-			if (program.shape_lock) { return; }
-			triangle_move(&program.shape_list[program.selected], program.mouse_delta);
-		}
-	}
-}
-
-static void input(const sapp_event* e) 
+static void input(const sapp_event *e)
 {
 	simgui_handle_event(e);
 
-	program.mouse_delta = { e->mouse_dx / program.zoom, e->mouse_dy / program.zoom };
-	program.mouse_position = 
-	{ 
-		.x = ((e->mouse_x - program.offset.x - 200.0f) / program.zoom), 
-		.y = (e->mouse_y - program.offset.y) / program.zoom
-	};
-	program.is_mouse_moving = 
-		program.mouse_delta.x != 0 ||
-		program.mouse_delta.y != 0;
-
-	right_mouse_down(e);
-	
-	right_mouse_up(e);
-
-	left_mouse_down(e);
-
-	left_mouse_up(e);
-
-	mouse_wheel(e);
-
+	update_mouse_position(e, &program);
+	update_left_mouse_button(e, &program);
+	update_right_mouse_button(e, &program);
+	update_middle_mouse_button(e, &program);
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-
-static void init(void) 
+static void init()
 {
-	program.zoom = 1.0f;
-	program.offset = { .x = 0.0f, .y = 0.0f };
-
-	// setup sokol-gfx and sokol-time
+	// setup sokol-gfx
 	sg_desc desc = { };
 	desc.context = sapp_sgcontext();
 	desc.logger.func = slog_func;
 	sg_setup(&desc);
 
+	// setup simgui
 	simgui_desc_t simgui_desc = { };
 	simgui_desc.no_default_font = true;
 	simgui_setup(&simgui_desc);
-
 	auto& io = ImGui::GetIO();
 	ImFontConfig fontCfg;
 	fontCfg.FontDataOwnedByAtlas = false;
@@ -330,7 +157,6 @@ static void init(void)
 		segoeui_compressed_size, 
 		16.0f, 
 		&fontCfg);
-
 	unsigned char* font_pixels;
 	int font_width, font_height;
 	io.Fonts->GetTexDataAsRGBA32(&font_pixels, &font_width, &font_height);
@@ -346,6 +172,7 @@ static void init(void)
 	img_desc.data.subimage[0][0].size = font_width * font_height * 4;
 	io.Fonts->TexID = (ImTextureID)(uintptr_t) sg_make_image(&img_desc).id;
 
+	// setup sokol gp
 	sgp_desc sgpdesc = { 0 };
 	sgp_setup(&sgpdesc);
 	if(!sgp_is_valid()) 
@@ -355,9 +182,7 @@ static void init(void)
 	}
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-
-static void cleanup(void) 
+static void cleanup()
 {
 	sg_destroy_image(program.main_image);
 	simgui_shutdown();
@@ -384,4 +209,19 @@ sapp_desc sokol_main(int argc, char* argv[])
 	desc.icon.sokol_default = true;
 	desc.enable_clipboard = true;
 	return desc;
+}
+
+static void viewport_translate()
+{
+	if (program.mouse.is_right_button_down)
+	{
+		program.translation.x += program.mouse.delta.x;
+		program.translation.y += program.mouse.delta.y;
+	}
+	sgp_translate(program.translation.x, program.translation.y);
+}
+
+static void viewport_scale()
+{
+	program.scale += 0.025 * program.mouse.scroll;
 }

@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+// -------------------------------------------------------------------------------------------------
+
 #include "../include/sokol/sokol_gfx.h"
 
 #include "../include/sokol/sokol_gp.h"
@@ -9,92 +11,121 @@
 
 #include <map>
 
-// --------------------------------------------------------------------------------------------------------------------
+#include <stdint.h>
 
-typedef unsigned long long id_t;
+typedef uint64_t u64;
 
-typedef enum shape_e
+typedef uint32_t u32;
+
+// -------------------------------------------------------------------------------------------------
+
+typedef int64_t i64;
+
+typedef int32_t i32;
+
+// -------------------------------------------------------------------------------------------------
+
+typedef sgp_vec2 v2f;
+
+typedef sgp_color v4f;
+
+typedef sgp_rect rect;
+
+typedef sgp_irect irect;
+
+// -------------------------------------------------------------------------------------------------
+
+typedef struct shape
 {
-	triangle = 0,
-	size
-} shape_e;
-
-// --------------------------------------------------------------------------------------------------------------------
-
-typedef struct shape_t
-{
 	
-	id_t id;
-	
-	shape_e type;
-	
-	std::vector<sgp_vec2> p;
-	
-	sgp_color color;
+	u64 id = 0;
 
-} shape_t;
+	std::vector<v2f> p = {};
 
-// --------------------------------------------------------------------------------------------------------------------
+	v4f color = {};
 
-typedef struct program_state_t
+	i32 locked = -1;
+
+} shape;
+
+// -------------------------------------------------------------------------------------------------
+
+typedef struct mouse_state
 {
 
-	bool is_mouse_moving;
-
-	bool is_mouse_left_down;
-
-	bool is_mouse_right_down;
-
-	bool shape_lock;
-
-	bool draw_selection;
-
-	sgp_vec2 mouse_position;
-
-	sgp_vec2 mouse_delta;
-
-	sgp_rect selection;
-
-	id_t id_counter;
-
-	id_t selected;
-
-	id_t last_selected;
-
-	int point_lock = -1;
+	bool is_moving = false;
 	
-	int main_menu_bar_height;
+	bool is_left_button_down = false;
+	
+	bool is_right_button_down = false;
+	
+	bool is_middle_button_down = false;
 
-	int side_bar_width = 200;
+	i32 scroll = 0;
 
-	int window_width;
+	v2f position = { .x = 0.0f, .y = 0.0f };
 
-	int window_height;
+	v2f delta = { .x = 0.0f, .y = 0.0f };;
 
-	int viewport_x;
+} mouse_state;
 
-	int viewport_y;
+// -------------------------------------------------------------------------------------------------
 
-	int viewport_width;
+typedef struct window_state 
+{
+	
+	i32 width;
 
-	int viewport_height;
+	i32 height;
 
-	float zoom;
+	float ratio = width / (float)height;
 
-	float window_ratio;
+} window_state;
 
-	float viewport_ratio;
+// -------------------------------------------------------------------------------------------------
 
-	sgp_vec2 offset;
+typedef struct viewport_state
+{
+	
+	int x, y, w, h;
+	
+	float ratio;
 
-	sg_image main_image;
+} viewport_state;
 
-	sg_pipeline pipeline;
+// -------------------------------------------------------------------------------------------------
 
-	std::map<id_t, shape_t> shape_list;
+typedef struct program_state
+{
 
-} program_state_t;
+	mouse_state mouse = {};
 
-// --------------------------------------------------------------------------------------------------------------------
+	window_state window = {};
+
+	viewport_state viewport = {};
+
+	u64 id_counter = 0;
+
+	u64 hot = 0;
+
+	std::vector<u64> selected = {};
+
+	std::vector<u64> last_selected = {};
+
+	float scale = 1.0f;
+
+	v2f translation = {};
+
+	sg_image main_image = {};
+
+	sg_pipeline pipeline = {};
+
+	std::map<u64, shape> shape_list = {};
+
+	u64 shape_list_size = 0;
+
+} program_state;
+
+// -------------------------------------------------------------------------------------------------
 
 #endif

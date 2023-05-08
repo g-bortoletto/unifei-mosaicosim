@@ -1,9 +1,12 @@
-#pragma once
+#ifndef GUI_H
+#define GUI_H
 
-struct program_state_t;
+struct program_state;
 
-void draw_main_menu_bar(program_state_t *program);
+static void debug_text_bool(const char *text, const bool *condition);
 
-void draw_debug_window(program_state_t *program);
+void debug_window_draw(program_state *program);
 
-void draw_side_bar(program_state_t *program);
+void side_bar_draw(program_state *program);
+
+#endif

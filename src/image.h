@@ -1,11 +1,20 @@
-#pragma once
+#ifndef IMAGE_H
+#define IMAGE_H
+
+// -------------------------------------------------------------------------------------------------
 
 struct sg_image;
 
-struct program_state_t;
+struct program_state;
 
-const sg_image load_image(const char *filename);
+// -------------------------------------------------------------------------------------------------
 
-void open_image(sg_image *main_image);
+const sg_image main_image_load(const char *filename);
 
-void draw_main_image(const program_state_t *program);
+void main_image_open(sg_image *main_image);
+
+void main_image_draw(const program_state *program);
+
+// -------------------------------------------------------------------------------------------------
+
+#endif
