@@ -155,7 +155,9 @@ Program::Program()
 {
 	controlBar = new ControlBar(*this);
 	mouse = new Mouse(*this);
+#ifdef _DEBUG
 	debugInfo = new DebugInfo(*this);
+#endif
 }
 
 Program::~Program()
