@@ -25,7 +25,10 @@ void Mouse::Init()
 void Mouse::Frame()
 {
 	imGuiWantsMouse = GetIO().WantCaptureMouse;
-	SetMouseCursor(mouseCursor);
+	if (mouseCursor != ImGuiMouseCursor_Arrow)
+	{
+		SetMouseCursor(mouseCursor);
+	}
 	sgp_scale(zoom, zoom);
 	sgp_translate(translation.x, translation.y);
 }
