@@ -27,7 +27,7 @@ void Program::InitSokolGfx()
 	sg_setup(&(sg_desc)
 	{
 		.context = sapp_sgcontext(),
-			.logger.func = slog_func,
+		.logger.func = slog_func,
 	});
 }
 
@@ -117,20 +117,20 @@ void Program::BeginFrame()
 	simgui_new_frame(&(simgui_frame_desc_t)
 	{
 		.width = (int)window.w,
-			.height = (int)window.h,
-			.delta_time = sapp_frame_duration(),
-			.dpi_scale = sapp_dpi_scale(),
+		.height = (int)window.h,
+		.delta_time = sapp_frame_duration(),
+		.dpi_scale = sapp_dpi_scale(),
 	});
+
+	sgp_set_color(0.0f, 0.0f, 0.0f, 1.0f);
+	sgp_clear();
+	sgp_reset_color();
 
 	sgp_viewport(
 		viewport.x,
 		viewport.y,
 		viewport.w,
 		viewport.h);
-
-	sgp_set_color(0.0f, 0.0f, 0.0f, 1.0f);
-	sgp_clear();
-	sgp_reset_color();
 
 	// TODO(guilherme): checar performance disso
 	ResetHot();
