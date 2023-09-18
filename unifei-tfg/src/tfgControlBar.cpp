@@ -62,7 +62,10 @@ void ControlBar::Frame()
 			program.CreateShape(vertices); 
 		}
 
-		if (Button("REMOVER PEÇA", ImVec2(buttonSize, 0.0f))) {}
+		if (Button("REMOVER PEÇA", ImVec2(buttonSize, 0.0f))) 
+		{
+			program.DestroyShape();
+		}
 		if (Button("SALVAR PROJETO", ImVec2(buttonSize, 0.0f))) {}
 
 		if (!program.selectionList.empty())

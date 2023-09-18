@@ -132,7 +132,6 @@ void Program::BeginFrame()
 		viewport.w,
 		viewport.h);
 
-	// TODO(guilherme): checar performance disso
 	ResetHot();
 }
 
@@ -222,6 +221,16 @@ u64 Program::CreateShape(u32 vertices)
 		new Shape(*this, vertices) 
 	});
 	return idCounter++;
+}
+
+void Program::DestroyShape()
+{
+	for (auto &i : selectionList)
+	{
+		delete shapeList[i];
+		shapeList.erase(i);
+	}
+	selectionList.clear();
 }
 
 #pragma clang diagnostic pop

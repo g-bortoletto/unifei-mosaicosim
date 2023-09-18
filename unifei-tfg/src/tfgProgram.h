@@ -52,6 +52,7 @@ public:
 	virtual void Input(const sapp_event *e) override;
 
 	u64 CreateShape(u32 vertices);
+	void DestroyShape();
 };
 
 #endif
