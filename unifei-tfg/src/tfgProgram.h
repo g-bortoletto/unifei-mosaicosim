@@ -62,7 +62,7 @@ public:
 	virtual void Input(const sapp_event *e) override;
 
 	u64 CreateShape(u32 vertices);
-	u64 CreateShape(Shape &other);
+	u64 CopyShape(Shape &other);
 	void DestroyShape();
 	void SetHot(u64 id);
 	const u64 &Hot(void) const;

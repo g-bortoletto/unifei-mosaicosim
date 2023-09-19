@@ -35,7 +35,8 @@ public:
 	float vertexRadius = 5.0f;
 
 	Shape(Program &program, u32 vertexCount, Color color = { .r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f });
-	Shape(Shape &other);
+	Shape(const Shape &other);
+	Shape(const Shape &other, u64 id);
 	virtual ~Shape();
 
 	const u64 Id(void) const;

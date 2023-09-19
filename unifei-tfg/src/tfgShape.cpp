@@ -242,23 +242,36 @@ Shape::Shape(
 	}
 }
 
-Shape::Shape(Shape &other) :
+Shape::Shape(const Shape &other) :
 	program(other.program),
-	vertexCount(other.vertexCount)
+	id(other.id),
+	vertexCount(other.vertexCount),
+	color(other.color)
 {
-	id = program.idCounter;
-	color = other.color;
 	for (int i = 0; i < vertexCount; ++i)
 	{
 		vertexList.push_back((Vector)
 		{
-			other.vertexList[i].x + 20.0f,
-			other.vertexList[i].y + 20.0f,
+			other.vertexList[i].x,
+			other.vertexList[i].y,
 		});
 	}
-	isHot = other.isHot;
-	hotVertex = other.hotVertex;
-	vertexRadius = other.vertexRadius;
+}
+
+Shape::Shape(const Shape &other, u64 id) :
+	program(other.program),
+	id(id),
+	vertexCount(other.vertexCount),
+	color(other.color)
+{
+	for (int i = 0; i < vertexCount; ++i)
+	{
+		vertexList.push_back((Vector)
+		{
+			other.vertexList[i].x,
+			other.vertexList[i].y,
+		});
+	}
 }
 
 Shape::~Shape()

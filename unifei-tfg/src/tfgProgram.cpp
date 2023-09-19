@@ -244,13 +244,18 @@ u64 Program::CreateShape(u32 vertices)
 	return idCounter++;
 }
 
-u64 Program::CreateShape(Shape &other)
+u64 Program::CopyShape(Shape &other)
 {
 	shapeList.insert(
 		{
 			idCounter,
-			new Shape(other)
+			new Shape(other, idCounter)
 		});
+	for (auto &v : shapeList[idCounter]->vertexList)
+	{
+		v.x += 20.0f;
+		v.y += 20.0f;
+	}
 	return idCounter++;
 }
 
@@ -308,7 +313,7 @@ void Program::Paste(void)
 
 	for (auto &s : shapeClipboard)
 	{
-		CreateShape(*s);
+		CopyShape(*s);
 	}
 }
 
