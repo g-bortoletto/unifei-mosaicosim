@@ -29,8 +29,11 @@ void Mouse::Frame()
 	{
 		SetMouseCursor(mouseCursor);
 	}
-	sgp_scale(zoom, zoom);
-	sgp_translate(translation.x, translation.y);
+	if (drawSelection)
+	{
+		selection.color = { 0.6f, 0.6f, 0.6f, 0.5f };
+		selection.Draw(SGP_BLENDMODE_BLEND);
+	}
 }
 
 void Mouse::Cleanup()
@@ -43,14 +46,14 @@ void Mouse::Input(const sapp_event *e)
 
 	position = Vector
 	{
-		((e->mouse_x - program.viewport.x) / zoom) - translation.x,
-		(e->mouse_y / zoom) - translation.y,
+		((e->mouse_x - program.viewport.x) / program.zoom) - program.translation.x,
+		(e->mouse_y / program.zoom) - program.translation.y,
 	};
 
 	delta = Vector
 	{
-		e->mouse_dx / zoom,
-		e->mouse_dy / zoom,
+		e->mouse_dx / program.zoom,
+		e->mouse_dy / program.zoom,
 	};
 
 	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN &&
@@ -58,6 +61,8 @@ void Mouse::Input(const sapp_event *e)
 	{
 		leftButtonDown = true;
 		lastLeftDownPosition = position;
+		selection.x = position.x;
+		selection.y = position.y;
 	}
 
 	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
@@ -83,8 +88,8 @@ void Mouse::Input(const sapp_event *e)
 	if (e->type == SAPP_EVENTTYPE_MOUSE_UP &&
 		e->mouse_button == SAPP_MOUSEBUTTON_MIDDLE)
 	{
-		zoom = 1.0f;
-		translation = {};
+		program.zoom = 1.0f;
+		program.translation = {};
 	}
 
 	if (e->type == SAPP_EVENTTYPE_MOUSE_SCROLL)
@@ -92,25 +97,21 @@ void Mouse::Input(const sapp_event *e)
 		scroll = e->scroll_y;
 		if (e->modifiers == SAPP_MODIFIER_SHIFT)
 		{
-			if (program.hot)
+			if (program.Hot())
 			{
-				program.shapeList[program.hot]->Scale((-scroll) * 0.1f);
+				program.shapeList[program.Hot()]->Scale((-scroll) * 0.1f);
 			}
 		}
 		else
 		{
 			if (scroll > 0)
 			{
-				zoom += 0.1f;
+				program.zoom *= 1.1f;
 			}
 			if (scroll < 0)
 			{
-				zoom -= 0.1f;
+				program.zoom /= 1.1f;
 			}
-		}
-		if (zoom <= 0.01f)
-		{
-			zoom = 0.01f;
 		}
 	}
 
@@ -118,12 +119,14 @@ void Mouse::Input(const sapp_event *e)
 	{
 		if (leftButtonDown)
 		{
+			selection.w = position.x - selection.x;
+			selection.h = position.y - selection.y;
 		}
 
 		if (rightButtonDown)
 		{
-			translation.x += delta.x / zoom;
-			translation.y += delta.y / zoom;
+			program.translation.x += delta.x / program.zoom;
+			program.translation.y += delta.y / program.zoom;
 		}
 	}
 }

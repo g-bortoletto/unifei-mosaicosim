@@ -23,7 +23,7 @@ DebugInfo::~DebugInfo()
 
 void DebugInfo::DebugTextBool(const char *text, bool condition)
 {
-	Text(text);
+	Text("%s", text);
 	SameLine();
 	TextColored(
 		condition
@@ -49,15 +49,17 @@ void DebugInfo::Frame()
 	Text("FPS: %d", (unsigned int)(1 / sapp_frame_duration()));
 
 	Separator();
-	ImGui::TextColored(ImVec4(0, 255, 255, 255), "GERAL");
+	ImGui::TextColored(ImVec4(0, 255, 255, 255), "GENERAL");
 	Separator();
 	Text("ENTITIES: %lld", program.idCounter - 1);
-	Text("HOT: %lld", program.hot);
+	Text("HOT: %lld", program.Hot());
+	Text("HOT PREVIOUS: %lld", program.HotPrevious());
 	Text("SELECTED:");
 	for (u64 i : program.selectionList)
 	{
 		Text("\t+ %lld (%d)", i, program.shapeList.at(i)->hotVertex);
 	}
+	Text("CLIPBOARD SIZE: %lld", program.shapeClipboard.size());
 
 	Separator();
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "MOUSE");
@@ -72,9 +74,9 @@ void DebugInfo::Frame()
 		program.mouse->delta.y);
 	Text(
 		"TRANSLATION: (%.2f, %.2f)",
-		program.mouse->translation.x,
-		program.mouse->translation.y);
-	Text("ZOOM: %f", program.mouse->zoom);
+		program.translation.x,
+		program.translation.y);
+	Text("ZOOM: %f", program.zoom);
 	Text(
 		"LAST LEFT DOWN: (%.2f, %.2f)", 
 		program.mouse->lastLeftDownPosition.x, 
@@ -82,6 +84,7 @@ void DebugInfo::Frame()
 	DebugTextBool("LEFT BUTTON DOWN:", program.mouse->leftButtonDown);
 	DebugTextBool("RIGHT BUTTON DOWN:", program.mouse->rightButtonDown);
 	DebugTextBool("IMGUI FOCUS:", program.mouse->imGuiWantsMouse);
+	DebugTextBool("DRAW SELECTION:", program.mouse->drawSelection);
 	Text("SCROLL: %d", program.mouse->scroll);
 
 	End();

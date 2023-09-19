@@ -1,8 +1,9 @@
-#if !defined (TFG_MOUSE_H)
+#ifndef TFG_MOUSE_H
 #define TFG_MOUSE_H
 
 #include "tfgObject.h"
 #include "tfgVector.h"
+#include "tfgRect.h"
 
 #include <imgui/imgui.h>
 
@@ -19,18 +20,18 @@ public:
 	Vector delta = {};
 	Vector lastPosition = {};
 	Vector lastLeftDownPosition = {};
-	Vector translation = {};
 
 	ImGuiMouseCursor mouseCursor = ImGuiMouseCursor_Arrow;
 
 	bool leftButtonDown = false;
 	bool rightButtonDown = false;
 	bool imGuiWantsMouse = false;
+	bool drawSelection = false;
 
 	int scroll = 0;
-	
-	float zoom = 1.0f;
 
+	Rect selection = {};
+	
 	Mouse(Program &program);
 	virtual ~Mouse();
 	virtual void Init() override;

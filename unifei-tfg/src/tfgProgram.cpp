@@ -4,6 +4,11 @@
 #pragma clang diagnostic ignored "-Wreorder-init-list"
 
 #include "tfgProgram.h"
+#include "tfgControlBar.h"
+#include "tfgBackgroundImage.h"
+#include "tfgMouse.h"
+#include "tfgShape.h"
+#include "tfgDebugInfo.h"
 
 #include <imgui/imgui.h>
 
@@ -18,10 +23,6 @@
 #include <fonts/segoeui.h>
 #include <sokol/sokol_imgui.h>
 
-#include "tfgControlBar.h"
-#include "tfgMouse.h"
-#include "tfgShape.h"
-#include "tfgDebugInfo.h"
 void Program::InitSokolGfx()
 {
 	sg_setup(&(sg_desc)
@@ -104,7 +105,7 @@ void Program::ResetHot()
 {
 	if (hot && !shapeList[hot]->isHot)
 	{
-		hot = 0;
+		SetHot(0);
 	}
 }
 
@@ -133,6 +134,9 @@ void Program::BeginFrame()
 		viewport.h);
 
 	ResetHot();
+	
+	sgp_scale(zoom, zoom);
+	sgp_translate(translation.x, translation.y);
 }
 
 void Program::EndFrame()
@@ -153,6 +157,7 @@ void Program::EndFrame()
 Program::Program()
 {
 	controlBar = new ControlBar(*this);
+	image = new BackgroundImage();
 	mouse = new Mouse(*this);
 #ifdef _DEBUG
 	debugInfo = new DebugInfo(*this);
@@ -165,6 +170,7 @@ Program::~Program()
 	delete debugInfo;
 #endif
 	delete mouse;
+	delete image;
 	delete controlBar;
 }
 void Program::Init()
@@ -182,6 +188,7 @@ void Program::Frame()
 	BeginFrame();
 
 	controlBar->Frame();
+	image->Frame();
 	mouse->Frame();
 	for (auto &s : shapeList)
 	{
@@ -211,6 +218,20 @@ void Program::Input(const sapp_event *e)
 	}
 #ifdef _DEBUG
 	debugInfo->Input(e);
+
+	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
+		&& e->key_code == SAPP_KEYCODE_C
+		&& e->modifiers == SAPP_MODIFIER_CTRL)
+	{
+		Copy();
+	}
+
+	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
+		&& e->key_code == SAPP_KEYCODE_V
+		&& e->modifiers == SAPP_MODIFIER_CTRL)
+	{
+		Paste();
+	}
 #endif
 }
 u64 Program::CreateShape(u32 vertices)
@@ -223,6 +244,16 @@ u64 Program::CreateShape(u32 vertices)
 	return idCounter++;
 }
 
+u64 Program::CreateShape(Shape &other)
+{
+	shapeList.insert(
+		{
+			idCounter,
+			new Shape(other)
+		});
+	return idCounter++;
+}
+
 void Program::DestroyShape()
 {
 	for (auto &i : selectionList)
@@ -231,6 +262,54 @@ void Program::DestroyShape()
 		shapeList.erase(i);
 	}
 	selectionList.clear();
+}
+
+void Program::SetHot(u64 id)
+{
+	hotPrevious = hot;
+	hot = id;
+}
+
+const u64 &Program::Hot(void) const
+{
+	return hot;
+}
+
+const u64 &Program::HotPrevious(void) const
+{
+	return hotPrevious;
+}
+
+void Program::LoadBackgroundImage(void)
+{
+	image->LoadBackgroundImage();
+}
+
+void Program::Copy(void)
+{
+	if (selectionList.empty())
+	{
+		return;
+	}
+
+	shapeClipboard.clear();
+	for (auto &s : selectionList)
+	{
+		shapeClipboard.push_back(shapeList[s]);
+	}
+}
+
+void Program::Paste(void)
+{
+	if (shapeClipboard.empty())
+	{
+		return;
+	}
+
+	for (auto &s : shapeClipboard)
+	{
+		CreateShape(*s);
+	}
 }
 
 #pragma clang diagnostic pop

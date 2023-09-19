@@ -4,11 +4,14 @@
 #include "tfgTypes.h"
 #include "tfgRect.h"
 #include "tfgObject.h"
+#include "tfgVector.h"
 
 #include <set>
 #include <map>
+#include <vector>
 
 class ControlBar;
+class BackgroundImage;
 class Mouse;
 class Shape;
 class DebugInfo;
@@ -16,6 +19,9 @@ class DebugInfo;
 class Program : public TfgObject
 {
 private:
+	u64 hot = 0;
+	u64 hotPrevious = 0;
+
 	void InitSokolGfx();
 	void InitSokolGp();
 	void InitImGui();
@@ -28,13 +34,13 @@ private:
 
 public:
 	bool showDebugInfo = false;
-	unsigned long long idCounter = 1;
-	unsigned long long hot = 0;
+	u64 idCounter = 1;
 
 	Rect window;
 	Rect viewport;
 
 	ControlBar *controlBar = 0;
+	BackgroundImage *image = 0;
 	Mouse *mouse = 0;
 #ifdef _DEBUG
 	DebugInfo *debugInfo = 0;
@@ -42,6 +48,10 @@ public:
 
 	std::map<u64, Shape *> shapeList;
 	std::set<u64> selectionList;
+	std::vector<Shape *> shapeClipboard;
+
+	float zoom = 1.0f;
+	Vector translation = {};
 
 	Program();
 	virtual ~Program();
@@ -52,7 +62,14 @@ public:
 	virtual void Input(const sapp_event *e) override;
 
 	u64 CreateShape(u32 vertices);
+	u64 CreateShape(Shape &other);
 	void DestroyShape();
+	void SetHot(u64 id);
+	const u64 &Hot(void) const;
+	const u64 &HotPrevious(void) const;
+	void LoadBackgroundImage(void);
+	void Copy(void);
+	void Paste(void);
 };
 
 #endif

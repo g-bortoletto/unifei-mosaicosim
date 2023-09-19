@@ -3,6 +3,8 @@
 
 #include "tfgTypes.h"
 
+enum sgp_blend_mode;
+
 class Rect
 {
 public:
@@ -13,7 +15,7 @@ public:
 
 	Color color;
 
-	void Draw(void) const;
+	void Draw(sgp_blend_mode blendMode) const;
 };
 
 #endif

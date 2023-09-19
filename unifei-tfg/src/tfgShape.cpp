@@ -174,7 +174,7 @@ void Shape::Draw()
 			isHot = IsHot(program.mouse->position);
 			if (isHot)
 			{
-				program.hot = this->id;
+				program.SetHot(id);
 				Highlight(i);
 				DrawDebugLineToVertices();
 			}
@@ -207,7 +207,6 @@ void Shape::Draw()
 bool Shape::CanMove(const sapp_event *e) const
 {
 	return hotVertex < 0
-		&& isHot
 		&& program.selectionList.find(id) != program.selectionList.end()
 		&& program.mouse->leftButtonDown
 		&& e->type == SAPP_EVENTTYPE_MOUSE_MOVE;
@@ -241,6 +240,25 @@ Shape::Shape(
 			size * sinf(i * 2 * PI / vertexCount) + hh,
 		});
 	}
+}
+
+Shape::Shape(Shape &other) :
+	program(other.program),
+	vertexCount(other.vertexCount)
+{
+	id = program.idCounter;
+	color = other.color;
+	for (int i = 0; i < vertexCount; ++i)
+	{
+		vertexList.push_back((Vector)
+		{
+			other.vertexList[i].x + 20.0f,
+			other.vertexList[i].y + 20.0f,
+		});
+	}
+	isHot = other.isHot;
+	hotVertex = other.hotVertex;
+	vertexRadius = other.vertexRadius;
 }
 
 Shape::~Shape()
@@ -300,6 +318,17 @@ void Shape::Input(const sapp_event *e)
 		&& e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
 		hotVertex = -1;
+		for (auto &v : vertexList)
+		{
+			if (program.mouse->drawSelection
+				&& v.x >= program.mouse->selection.x
+				&& v.y >= program.mouse->selection.y
+				&& v.x <= program.mouse->selection.w
+				&& v.y <= program.mouse->selection.h)
+			{
+				program.selectionList.insert(id);
+			}
+		}
 	}
 	
 	if (hotVertex >= 0
@@ -323,17 +352,19 @@ void Shape::Input(const sapp_event *e)
 
 		if (isHot)
 		{
-			if (!isSelected)
+			if (!isSelected
+				&& !(e->modifiers & SAPP_MODIFIER_SHIFT))
 			{
 				program.selectionList.clear();
-				program.selectionList.insert(id);
 			}
+			program.selectionList.insert(id);
 		}
 		else
 		{
 			if (isSelected)
 			{
-				if (hotVertex < 0)
+				if (hotVertex < 0 
+					&& !(e->modifiers & SAPP_MODIFIER_SHIFT))
 				{
 					program.selectionList.clear();
 				}

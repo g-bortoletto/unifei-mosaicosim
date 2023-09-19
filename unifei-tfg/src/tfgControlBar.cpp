@@ -46,7 +46,10 @@ void ControlBar::Frame()
 		static int vertices = 3;
 		static unsigned char step = 1;
 
-		if (Button("CARREGAR IMAGEM", ImVec2(buttonSize, 0.0f))) {}
+		if (Button("CARREGAR IMAGEM", ImVec2(buttonSize, 0.0f))) 
+		{
+			program.LoadBackgroundImage();
+		}
 
 		SetNextItemWidth(inputScalarWidth);
 		if (InputScalar("## ADD_PEÇA", ImGuiDataType_U8, &vertices, &step))

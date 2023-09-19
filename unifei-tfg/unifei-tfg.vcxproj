@@ -148,6 +148,8 @@
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="include\nfd\nfd_win.cpp" />
+    <ClCompile Include="src\tfgBackgroundImage.cpp" />
     <ClCompile Include="src\tfgControlBar.cpp" />
     <ClCompile Include="src\tfgDebugInfo.cpp" />
     <ClCompile Include="src\tfgMain.cpp" />
@@ -182,6 +184,7 @@
     <ClInclude Include="include\sokol\sokol_log.h" />
     <ClInclude Include="include\sokol\sokol_time.h" />
     <ClInclude Include="include\stb\stb_image.h" />
+    <ClInclude Include="src\tfgBackgroundImage.h" />
     <ClInclude Include="src\tfgControlBar.h" />
     <ClInclude Include="src\tfgDebugInfo.h" />
     <ClInclude Include="src\tfgMouse.h" />
