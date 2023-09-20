@@ -149,6 +149,7 @@
     <ClCompile Include="include\imgui\imgui_tables.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="include\nfd\nfd_win.cpp" />
+    <ClCompile Include="include\parson\parson.cpp" />
     <ClCompile Include="src\tfgBackgroundImage.cpp" />
     <ClCompile Include="src\tfgControlBar.cpp" />
     <ClCompile Include="src\tfgDebugInfo.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="include\nfd\nfd.h" />
     <ClInclude Include="include\nfd\nfd_common.h" />
     <ClInclude Include="include\nfd\simple_exec.h" />
+    <ClInclude Include="include\parson\parson.h" />
     <ClInclude Include="include\sokol\sokol_app.h" />
     <ClInclude Include="include\sokol\sokol_args.h" />
     <ClInclude Include="include\sokol\sokol_audio.h" />

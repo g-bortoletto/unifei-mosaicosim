@@ -69,7 +69,14 @@ void ControlBar::Frame()
 		{
 			program.DestroyShape();
 		}
-		if (Button("SALVAR PROJETO", ImVec2(buttonSize, 0.0f))) {}
+		if (Button("SALVAR PROJETO", ImVec2(buttonSize, 0.0f))) 
+		{
+			program.Save();
+		}
+		if (Button("CARREGAR PROJETO", ImVec2(buttonSize, 0.0f)))
+		{
+			program.Load();
+		}
 
 		if (!program.selectionList.empty())
 		{

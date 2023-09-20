@@ -10,6 +10,7 @@
 #include <set>
 #include <map>
 #include <vector>
+#include <string>
 
 class ControlBar;
 class BackgroundImage;
@@ -33,6 +34,7 @@ private:
 	void EndFrame();
 
 public:
+	std::string projectPath;
 	bool showDebugInfo = false;
 	u64 idCounter = 1;
 
@@ -76,6 +78,9 @@ public:
 	void UpdateUndoBuffer(void);
 	void Undo(void);
 	void Redo(void);
+
+	void Save(void);
+	void Load(void);
 };
 
 #endif

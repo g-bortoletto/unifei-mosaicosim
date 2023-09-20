@@ -22,6 +22,10 @@
 #include <fonts/segoeui.h>
 #include <sokol/sokol_imgui.h>
 
+#include <parson/parson.h>
+
+#include <nfd/nfd.h>
+
 void Program::InitSokolGfx()
 {
 	sg_setup(&(sg_desc)
@@ -371,6 +375,110 @@ void Program::Redo(void)
 	shapeList = redoBuffer.back();
 	redoBuffer.pop_back();
 	selectionList.clear();
+}
+
+void Program::Save(void)
+{
+	nfdchar_t *pp = 0;
+	if (projectPath.empty())
+	{
+		nfdresult_t result = NFD_SaveDialog("tfg", 0, &pp);
+		if (result == NFD_OKAY)
+		{
+			projectPath = std::string(pp);
+		}
+	}
+
+	JSON_Value *rootVal = json_value_init_object();
+	JSON_Object *rootObj = json_value_get_object(rootVal);
+	char *serializedString = 0;
+
+	JSON_Value *shapeListVal = json_value_init_array();
+	JSON_Array *shapeListArr = json_value_get_array(shapeListVal);
+
+	for (auto &s : shapeList)
+	{
+		JSON_Value *shapeVal = json_value_init_object();
+		JSON_Object *shapeObj = json_value_get_object(shapeVal);
+
+
+		JSON_Value *vertexVal = json_value_init_array();
+		JSON_Array *vertexArr = json_value_get_array(vertexVal);
+
+		for (auto &v : s.second.vertexList)
+		{
+			JSON_Value *vectorVal = json_value_init_object();
+			JSON_Object *vectorObj = json_value_get_object(vectorVal);
+
+			json_object_set_number(vectorObj, "x", v.x);
+			json_object_set_number(vectorObj, "y", v.y);
+
+			json_array_append_value(vertexArr, vectorVal);
+		}
+		json_object_set_value(shapeObj, "vertexList", vertexVal);
+
+		json_object_dotset_number(shapeObj, "color.r", s.second.color.r);
+		json_object_dotset_number(shapeObj, "color.g", s.second.color.g);
+		json_object_dotset_number(shapeObj, "color.b", s.second.color.b);
+		json_object_dotset_number(shapeObj, "color.a", s.second.color.a);
+		
+		json_array_append_value(shapeListArr, shapeVal);
+	}
+	json_object_set_value(rootObj, "shapeList", shapeListVal);
+
+	serializedString = json_serialize_to_string_pretty(rootVal);
+
+	FILE *handle = fopen(projectPath.c_str(), "w");
+	if (handle)
+	{
+		fprintf(handle, "%s", serializedString);
+		fclose(handle);
+	}
+	json_free_serialized_string(serializedString);
+	json_value_free(rootVal);
+}
+
+void Program::Load(void)
+{
+	nfdchar_t *pp = 0;
+	nfdresult_t result = NFD_OpenDialog("tfg", 0, &pp);
+	if (result == NFD_OKAY)
+	{
+		projectPath = std::string(pp);
+	}
+
+	JSON_Value *jv = json_parse_file(projectPath.c_str());
+	JSON_Object *rootObj = json_value_get_object(jv);
+	JSON_Array *shapeListArr = json_object_get_array(rootObj, "shapeList");
+	JSON_Object *shapeObj = 0;
+	for (size_t i = 0; i < json_array_get_count(shapeListArr); ++i)
+	{
+		shapeObj = json_array_get_object(shapeListArr, i);
+		JSON_Array *vertexList = json_object_get_array(shapeObj, "vertexList");
+		JSON_Object *vertexObj = 0;
+		size_t vertexCount = json_array_get_count(vertexList);
+		std::vector<Vector> vertexVector;
+		for (size_t j = 0; j < vertexCount; ++j)
+		{
+			vertexObj = json_array_get_object(vertexList, j);
+			vertexVector.push_back(Vector(
+				json_object_get_number(vertexObj, "x"), 
+				json_object_get_number(vertexObj, "y")));
+		}
+		Color c = Color
+		{
+			.r = (float)json_object_dotget_number(shapeObj, "color.r"),
+			.g = (float)json_object_dotget_number(shapeObj, "color.g"),
+			.b = (float)json_object_dotget_number(shapeObj, "color.b"),
+			.a = (float)json_object_dotget_number(shapeObj, "color.a"),
+		};
+		u64 ns = CreateShape(vertexCount);
+		for (int j = 0; j < vertexCount; ++j)
+		{
+			shapeList.find(ns)->second.vertexList[j] = vertexVector[j];
+		}
+		shapeList.find(ns)->second.color = c;
+	}
 }
 
 #pragma clang diagnostic pop
