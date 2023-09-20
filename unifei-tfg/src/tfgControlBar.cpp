@@ -76,7 +76,10 @@ void ControlBar::Frame()
 			SetNextItemWidth(buttonSize);
 			ColorPicker4(
 				"## COR PEÇA",
-				&program.shapeList[*program.selectionList.begin()]->color.r,
+				&program
+					.shapeList
+					.find(*program.selectionList.begin())
+					->second.color.r,
 				ImGuiColorEditFlags_NoSidePreview);
 		}
 

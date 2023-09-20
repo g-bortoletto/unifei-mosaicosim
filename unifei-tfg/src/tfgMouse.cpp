@@ -99,7 +99,7 @@ void Mouse::Input(const sapp_event *e)
 		{
 			if (program.Hot())
 			{
-				program.shapeList[program.Hot()]->Scale((-scroll) * 0.1f);
+				program.shapeList.find(program.Hot())->second.Scale((-scroll) * 0.1f);
 			}
 		}
 		else

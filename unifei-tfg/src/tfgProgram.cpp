@@ -7,7 +7,6 @@
 #include "tfgControlBar.h"
 #include "tfgBackgroundImage.h"
 #include "tfgMouse.h"
-#include "tfgShape.h"
 #include "tfgDebugInfo.h"
 
 #include <imgui/imgui.h>
@@ -103,7 +102,7 @@ void Program::InitViewport()
 
 void Program::ResetHot()
 {
-	if (hot && !shapeList[hot]->isHot)
+	if (hot && !shapeList.find(hot)->second.isHot)
 	{
 		SetHot(0);
 	}
@@ -192,7 +191,7 @@ void Program::Frame()
 	mouse->Frame();
 	for (auto &s : shapeList)
 	{
-		s.second->Frame();
+		s.second.Frame();
 	}
 #ifdef _DEBUG
 	if (debugInfo->show)
@@ -214,10 +213,18 @@ void Program::Input(const sapp_event *e)
 	mouse->Input(e);
 	for (auto &s : shapeList)
 	{
-		s.second->Input(e);
+		s.second.Input(e);
 	}
 #ifdef _DEBUG
 	debugInfo->Input(e);
+#endif
+
+	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN
+		&& e->mouse_button == SAPP_MOUSEBUTTON_LEFT
+		&& !mouse->imGuiWantsMouse)
+	{
+		UpdateUndoBuffer();
+	}
 
 	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
 		&& e->key_code == SAPP_KEYCODE_C
@@ -232,26 +239,35 @@ void Program::Input(const sapp_event *e)
 	{
 		Paste();
 	}
-#endif
+
+	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
+		&& e->key_code == SAPP_KEYCODE_Z
+		&& e->modifiers == SAPP_MODIFIER_CTRL)
+	{
+		Undo();
+	}
+
+	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
+		&& e->key_code == SAPP_KEYCODE_Y
+		&& e->modifiers == SAPP_MODIFIER_CTRL)
+	{
+		Redo();
+	}
 }
 u64 Program::CreateShape(u32 vertices)
 {
-	shapeList.insert(
-	{
-		idCounter,
-		new Shape(*this, vertices) 
-	});
+	UpdateUndoBuffer();
+	std::pair<u64, Shape> shapePair(idCounter, Shape(*this, vertices));
+	shapeList.emplace(shapePair);
 	return idCounter++;
 }
 
 u64 Program::CopyShape(Shape &other)
 {
-	shapeList.insert(
-		{
-			idCounter,
-			new Shape(other, idCounter)
-		});
-	for (auto &v : shapeList[idCounter]->vertexList)
+	UpdateUndoBuffer();
+	std::pair<u64, Shape> shapePair(idCounter, Shape(other, idCounter));
+	shapeList.insert(shapePair);
+	for (auto &v : shapeList.find(idCounter)->second.vertexList)
 	{
 		v.x += 20.0f;
 		v.y += 20.0f;
@@ -261,11 +277,6 @@ u64 Program::CopyShape(Shape &other)
 
 void Program::DestroyShape()
 {
-	for (auto &i : selectionList)
-	{
-		delete shapeList[i];
-		shapeList.erase(i);
-	}
 	selectionList.clear();
 }
 
@@ -300,7 +311,7 @@ void Program::Copy(void)
 	shapeClipboard.clear();
 	for (auto &s : selectionList)
 	{
-		shapeClipboard.push_back(shapeList[s]);
+		shapeClipboard.push_back(shapeList.find(s)->second);
 	}
 }
 
@@ -313,8 +324,37 @@ void Program::Paste(void)
 
 	for (auto &s : shapeClipboard)
 	{
-		CopyShape(*s);
+		CopyShape(s);
 	}
+}
+
+void Program::UpdateUndoBuffer(void)
+{
+	undoBuffer.push_back(std::map<u64, Shape>(shapeList));
+}
+
+void Program::Undo(void)
+{
+	if (undoBuffer.empty())
+	{
+		return;
+	}
+	redoBuffer.push_back(std::map<u64, Shape>(shapeList));
+	shapeList = undoBuffer.back();
+	undoBuffer.pop_back();
+	selectionList.clear();
+}
+
+void Program::Redo(void)
+{
+	if (redoBuffer.empty())
+	{
+		return;
+	}
+	undoBuffer.push_back(std::map<u64, Shape>(shapeList));
+	shapeList = redoBuffer.back();
+	redoBuffer.pop_back();
+	selectionList.clear();
 }
 
 #pragma clang diagnostic pop

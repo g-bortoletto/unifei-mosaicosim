@@ -5,6 +5,7 @@
 #include "tfgRect.h"
 #include "tfgObject.h"
 #include "tfgVector.h"
+#include "tfgShape.h"
 
 #include <set>
 #include <map>
@@ -13,7 +14,6 @@
 class ControlBar;
 class BackgroundImage;
 class Mouse;
-class Shape;
 class DebugInfo;
 
 class Program : public TfgObject
@@ -46,9 +46,11 @@ public:
 	DebugInfo *debugInfo = 0;
 #endif
 
-	std::map<u64, Shape *> shapeList;
+	std::map<u64, Shape> shapeList;
 	std::set<u64> selectionList;
-	std::vector<Shape *> shapeClipboard;
+	std::vector<Shape> shapeClipboard;
+	std::vector<std::map<u64, Shape>> undoBuffer;
+	std::vector<std::map<u64, Shape>> redoBuffer;
 
 	float zoom = 1.0f;
 	Vector translation = {};
@@ -70,6 +72,10 @@ public:
 	void LoadBackgroundImage(void);
 	void Copy(void);
 	void Paste(void);
+
+	void UpdateUndoBuffer(void);
+	void Undo(void);
+	void Redo(void);
 };
 
 #endif

@@ -51,15 +51,17 @@ void DebugInfo::Frame()
 	Separator();
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "GENERAL");
 	Separator();
-	Text("ENTITIES: %lld", program.idCounter - 1);
+	Text("ENTITIES: %lld", program.shapeList.size());
 	Text("HOT: %lld", program.Hot());
 	Text("HOT PREVIOUS: %lld", program.HotPrevious());
 	Text("SELECTED:");
 	for (u64 i : program.selectionList)
 	{
-		Text("\t+ %lld (%d)", i, program.shapeList.at(i)->hotVertex);
+		Text("\t+ %lld (%d)", i, program.shapeList.find(i)->second.hotVertex);
 	}
 	Text("CLIPBOARD SIZE: %lld", program.shapeClipboard.size());
+	Text("UNDO BUFFER SIZE: %lld", program.undoBuffer.size());
+	Text("REDO BUFFER SIZE: %lld", program.redoBuffer.size());
 
 	Separator();
 	ImGui::TextColored(ImVec4(0, 255, 255, 255), "MOUSE");
