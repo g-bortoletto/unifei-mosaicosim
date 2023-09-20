@@ -385,3 +385,15 @@ void Shape::Input(const sapp_event *e)
 		}
 	}
 }
+
+bool Shape::operator==(const Shape &other) const
+{
+	bool result = true;
+	result = result && vertexCount == other.vertexCount;
+	for (int i = 0; i < vertexCount; ++i)
+	{
+		result = result && vertexList[i] == other.vertexList[i];
+	}
+	result = result && color == other.color;
+	return result;
+}

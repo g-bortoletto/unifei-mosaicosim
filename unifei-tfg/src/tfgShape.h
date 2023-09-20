@@ -46,6 +46,8 @@ public:
 	virtual void Frame() override;
 	virtual void Cleanup() override;
 	virtual void Input(const sapp_event *e) override;
+
+	bool operator==(const Shape &other) const;
 };
 
 #endif

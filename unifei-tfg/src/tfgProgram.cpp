@@ -330,7 +330,23 @@ void Program::Paste(void)
 
 void Program::UpdateUndoBuffer(void)
 {
-	undoBuffer.push_back(std::map<u64, Shape>(shapeList));
+	redoBuffer.clear();
+	bool result = false;
+	if (!undoBuffer.empty())
+	{
+		result = true;
+		for (auto &s : shapeList)
+		{
+			auto last = undoBuffer.back().find(s.first);
+			result = result 
+				&& last != undoBuffer.back().end()
+				&& s.second == last->second;
+		}
+	}
+	if (!result)
+	{
+		undoBuffer.push_back(std::map<u64, Shape>(shapeList));
+	}
 }
 
 void Program::Undo(void)
