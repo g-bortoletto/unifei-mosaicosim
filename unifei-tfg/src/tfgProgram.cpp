@@ -385,13 +385,15 @@ void Program::Save(void)
 		nfdresult_t result = NFD_SaveDialog("tfg", 0, &pp);
 		if (result == NFD_OKAY)
 		{
-			projectPath = std::string(pp);
+			projectPath = std::string(pp) + ".tfg";
 		}
 	}
 
 	JSON_Value *rootVal = json_value_init_object();
 	JSON_Object *rootObj = json_value_get_object(rootVal);
 	char *serializedString = 0;
+
+	json_object_set_string(rootObj, "image", image->path.c_str());
 
 	JSON_Value *shapeListVal = json_value_init_array();
 	JSON_Array *shapeListArr = json_value_get_array(shapeListVal);
@@ -447,8 +449,11 @@ void Program::Load(void)
 		projectPath = std::string(pp);
 	}
 
+	shapeList.clear();
+	idCounter = 1;
 	JSON_Value *jv = json_parse_file(projectPath.c_str());
 	JSON_Object *rootObj = json_value_get_object(jv);
+	std::string imagePath = json_object_get_string(rootObj, "image");
 	JSON_Array *shapeListArr = json_object_get_array(rootObj, "shapeList");
 	JSON_Object *shapeObj = 0;
 	for (size_t i = 0; i < json_array_get_count(shapeListArr); ++i)
@@ -479,6 +484,9 @@ void Program::Load(void)
 		}
 		shapeList.find(ns)->second.color = c;
 	}
+	image->path = imagePath;
+	LoadBackgroundImage();
+	json_value_free(jv);
 }
 
 #pragma clang diagnostic pop

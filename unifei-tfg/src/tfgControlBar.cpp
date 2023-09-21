@@ -1,6 +1,7 @@
 ﻿#include "tfgControlBar.h"
 
 #include "tfgProgram.h"
+#include "tfgBackgroundImage.h"
 #include "tfgShape.h"
 
 #include <imgui/imgui.h>
@@ -48,6 +49,7 @@ void ControlBar::Frame()
 
 		if (Button("CARREGAR IMAGEM", ImVec2(buttonSize, 0.0f))) 
 		{
+			program.image->path.clear();
 			program.LoadBackgroundImage();
 		}
 

@@ -3,10 +3,12 @@
 #include "tfgObject.h"
 
 #include <sokol/sokol_gfx.h>
+#include <string>
 
 class BackgroundImage : public TfgObject
 {
 public:
+	std::string path;
 	sg_image img;
 	int w;
 	int h;

@@ -15,10 +15,10 @@ BackgroundImage::BackgroundImage()
 BackgroundImage::~BackgroundImage()
 {
 	// TODO(guilherme): investigar esse bug.
-	if (img.id != SG_INVALID_ID)
+	/*if (img.id != SG_INVALID_ID)
 	{
 		sg_destroy_image(img);
-	}
+	}*/
 }
 
 void BackgroundImage::Init()
@@ -50,23 +50,30 @@ void BackgroundImage::Input(const sapp_event *e)
 void BackgroundImage::LoadBackgroundImage(void)
 { 
 	nfdchar_t *filename = 0;
-	nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &filename);
-	if (result == NFD_OKAY)
+	if (path.empty())
 	{
-		int channels = 0;
-		unsigned char *data = stbi_load(filename, &w, &h, &channels, 4);
-		sg_image_desc image_desc =
-		{
-			.width = w,
-			.height = h,
-			.min_filter = SG_FILTER_LINEAR,
-			.mag_filter = SG_FILTER_LINEAR,
-			.wrap_u = SG_WRAP_CLAMP_TO_EDGE,
-			.wrap_v = SG_WRAP_CLAMP_TO_EDGE,
-		};
-		image_desc.data.subimage[0][0].ptr = data;
-		image_desc.data.subimage[0][0].size = (size_t)(w * h * 4);
-		img = sg_make_image(&image_desc);
-		stbi_image_free(data);
+		nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &filename);
+		if (result == NFD_ERROR) return;
+	}
+
+	int channels = 0;
+	unsigned char *data = stbi_load(path.empty() ? filename : path.c_str(), &w, &h, &channels, 4);
+	sg_image_desc image_desc =
+	{
+		.width = w,
+		.height = h,
+		.min_filter = SG_FILTER_LINEAR,
+		.mag_filter = SG_FILTER_LINEAR,
+		.wrap_u = SG_WRAP_CLAMP_TO_EDGE,
+		.wrap_v = SG_WRAP_CLAMP_TO_EDGE,
+	};
+	image_desc.data.subimage[0][0].ptr = data;
+	image_desc.data.subimage[0][0].size = (size_t)(w * h * 4);
+	img = sg_make_image(&image_desc);
+	stbi_image_free(data);
+	
+	if (path.empty())
+	{
+		path = std::string(filename);
 	}
 }
