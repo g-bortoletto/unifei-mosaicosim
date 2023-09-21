@@ -281,6 +281,10 @@ u64 Program::CopyShape(Shape &other)
 
 void Program::DestroyShape()
 {
+	for (auto &i : selectionList)
+	{
+		shapeList.erase(i);
+	}
 	selectionList.clear();
 }
 
