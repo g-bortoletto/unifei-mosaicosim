@@ -21,7 +21,7 @@ private:
 	i32 HotVertex(const Vector &p) const;
 	bool IsHot(const Vector &p) const;
 	bool LightColor(void) const;
-	void Highlight(int i);
+	void Highlight();
 	void DrawDebugLineToVertices();
 	void Draw();
 	bool CanMove(const sapp_event *e) const;

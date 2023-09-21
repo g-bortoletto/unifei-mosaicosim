@@ -101,23 +101,26 @@ bool Shape::LightColor(void) const
 	return c >= 0.8f;
 }
 
-void Shape::Highlight(int i)
+void Shape::Highlight()
 {
-	sgp_set_blend_mode(SGP_BLENDMODE_BLEND);
-	if (LightColor())
+	for (int i = 0; i < (vertexCount - 1); ++i)
 	{
-		sgp_set_color(0.0f, 0.0f, 0.0f, 0.5f);
+		sgp_set_blend_mode(SGP_BLENDMODE_BLEND);
+		if (LightColor())
+		{
+			sgp_set_color(0.0f, 0.0f, 0.0f, 0.5f);
+		}
+		else
+		{
+			sgp_set_color(1.0f, 1.0f, 1.0f, 0.5f);
+		}
+		sgp_draw_filled_triangle(
+			vertexList[0].x, vertexList[0].y,
+			vertexList[i].x, vertexList[i].y,
+			vertexList[i + 1].x, vertexList[i + 1].y);
+		sgp_reset_blend_mode();
+		sgp_reset_color();
 	}
-	else
-	{
-		sgp_set_color(1.0f, 1.0f, 1.0f, 0.5f);
-	}
-	sgp_draw_filled_triangle(
-		vertexList[0].x, vertexList[0].y,
-		vertexList[i].x, vertexList[i].y,
-		vertexList[i + 1].x, vertexList[i + 1].y);
-	sgp_reset_blend_mode();
-	sgp_reset_color();
 }
 
 void Shape::DrawDebugLineToVertices()
@@ -156,31 +159,32 @@ void Shape::Draw()
 			vertexList[0].x, vertexList[0].y,
 			vertexList[i].x, vertexList[i].y,
 			vertexList[i + 1].x, vertexList[i + 1].y);
-		
-		hotVertex = HotVertex(program.mouse->position);
-		if (hotVertex >= 0)
-		{
-			vertexList[hotVertex].color = Color
-			{
-				.r = 1.0f,
-				.g = 1.0f,
-				.b = 1.0f,
-				.a = 1.0f,
-			};
-			vertexList[hotVertex].Draw();
-		}
-		else
-		{
-			isHot = IsHot(program.mouse->position);
-			if (isHot)
-			{
-				program.SetHot(id);
-				Highlight(i);
-				DrawDebugLineToVertices();
-			}
-		}
 		sgp_reset_color();
 	}
+
+	hotVertex = HotVertex(program.mouse->position);
+	if (hotVertex >= 0)
+	{
+		vertexList[hotVertex].color = Color
+		{
+			.r = 1.0f,
+			.g = 1.0f,
+			.b = 1.0f,
+			.a = 1.0f,
+		};
+		vertexList[hotVertex].Draw();
+	}
+	else
+	{
+		isHot = IsHot(program.mouse->position);
+		if (isHot)
+		{
+			program.SetHot(id);
+			Highlight();
+			DrawDebugLineToVertices();
+		}
+	}
+
 	if (program.selectionList.find(id) != program.selectionList.end())
 	{
 		sgp_push_transform();
