@@ -23,6 +23,8 @@ private:
 	bool LightColor(void) const;
 	void Highlight();
 	void DrawDebugLineToVertices();
+	void DrawWireTriangle(Vector a, Vector b, Vector c) const;
+	void DrawShape();
 	void Draw();
 	bool CanMove(const sapp_event *e) const;
 	void Move();
@@ -41,6 +43,7 @@ public:
 
 	const u64 Id(void) const;
 	void Scale(float amount);
+	Vector Center() const;
 
 	virtual void Init() override;
 	virtual void Frame() override;

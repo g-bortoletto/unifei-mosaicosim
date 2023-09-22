@@ -103,24 +103,18 @@ bool Shape::LightColor(void) const
 
 void Shape::Highlight()
 {
-	for (int i = 0; i < (vertexCount - 1); ++i)
+	sgp_set_blend_mode(SGP_BLENDMODE_BLEND);
+	if (LightColor())
 	{
-		sgp_set_blend_mode(SGP_BLENDMODE_BLEND);
-		if (LightColor())
-		{
-			sgp_set_color(0.0f, 0.0f, 0.0f, 0.5f);
-		}
-		else
-		{
-			sgp_set_color(1.0f, 1.0f, 1.0f, 0.5f);
-		}
-		sgp_draw_filled_triangle(
-			vertexList[0].x, vertexList[0].y,
-			vertexList[i].x, vertexList[i].y,
-			vertexList[i + 1].x, vertexList[i + 1].y);
-		sgp_reset_blend_mode();
-		sgp_reset_color();
+		sgp_set_color(0.0f, 0.0f, 0.0f, 0.5f);
 	}
+	else
+	{
+		sgp_set_color(1.0f, 1.0f, 1.0f, 0.5f);
+	}
+	DrawShape();
+	sgp_reset_blend_mode();
+	sgp_reset_color();
 }
 
 void Shape::DrawDebugLineToVertices()
@@ -150,17 +144,84 @@ void Shape::DrawDebugLineToVertices()
 #endif
 }
 
+void Shape::DrawWireTriangle(Vector a, Vector b, Vector c) const
+{
+	sgp_push_transform();
+	sgp_scale_at(1.1f, 1.1f, Center().x, Center().y);
+	sgp_draw_line(a.x, a.y, b.x, b.y);
+	sgp_draw_line(b.x, b.y, c.x, c.y);
+	sgp_draw_line(a.x, a.y, c.x, c.y);
+	sgp_pop_transform();
+}
+
+void Shape::DrawShape()
+{
+	switch (vertexCount)
+	{
+		case 3:
+		{
+			sgp_draw_filled_triangle(
+				vertexList[0].x, vertexList[0].y,
+				vertexList[1].x, vertexList[1].y,
+				vertexList[2].x, vertexList[2].y);
+
+			if (program.debugInfo->show)
+			{
+				DrawWireTriangle(vertexList[0], vertexList[1], vertexList[2]);
+			}
+		}
+		break;
+
+		case 4:
+		{
+			sgp_draw_filled_triangle(
+				vertexList[0].x, vertexList[0].y,
+				vertexList[1].x, vertexList[1].y,
+				vertexList[2].x, vertexList[2].y);
+			sgp_draw_filled_triangle(
+				vertexList[0].x, vertexList[0].y,
+				vertexList[2].x, vertexList[2].y,
+				vertexList[3].x, vertexList[3].y);
+		}
+		if (program.debugInfo->show)
+		{
+			DrawWireTriangle(vertexList[0], vertexList[1], vertexList[2]);
+			DrawWireTriangle(vertexList[0], vertexList[2], vertexList[3]);
+		}
+		break;
+
+		default:
+		{
+			Vector center = Center();
+			for (int i = 0; i < vertexCount - 1; ++i)
+			{
+				sgp_draw_filled_triangle(
+					center.x, center.y,
+					vertexList[i].x, vertexList[i].y,
+					vertexList[i + 1].x, vertexList[i + 1].y);
+				if (program.debugInfo->show)
+				{
+					DrawWireTriangle(center, vertexList[i], vertexList[i + 1]);
+				}
+			}
+			sgp_draw_filled_triangle(
+				center.x, center.y,
+				vertexList[vertexCount - 1].x, vertexList[vertexCount - 1].y,
+				vertexList[0].x, vertexList[0].y);
+			if (program.debugInfo->show)
+			{
+				DrawWireTriangle(center, vertexList[vertexCount - 1], vertexList[0]);
+			}
+		}
+		break;
+	}
+}
+
 void Shape::Draw()
 {
-	for (int i = 1; i < (vertexCount - 1); ++i)
-	{
-		sgp_set_color(color.r, color.g, color.b, color.a);
-		sgp_draw_filled_triangle(
-			vertexList[0].x, vertexList[0].y,
-			vertexList[i].x, vertexList[i].y,
-			vertexList[i + 1].x, vertexList[i + 1].y);
-		sgp_reset_color();
-	}
+	sgp_set_color(color.r, color.g, color.b, color.a);
+	DrawShape();
+	sgp_reset_color();
 
 	hotVertex = HotVertex(program.mouse->position);
 	if (hotVertex >= 0)
@@ -222,6 +283,15 @@ void Shape::Move()
 	{
 		vertexList[i].x += program.mouse->delta.x;
 		vertexList[i].y += program.mouse->delta.y;
+	}
+}
+
+void Shape::MoveVertex()
+{
+	if (hotVertex >= 0)
+	{
+		vertexList[hotVertex].x += program.mouse->delta.x;
+		vertexList[hotVertex].y += program.mouse->delta.y;
 	}
 }
 
@@ -304,6 +374,22 @@ void Shape::Scale(float amount)
 		v.x += scaleDirection.x * amount;
 		v.y += scaleDirection.y * amount;
 	}
+}
+
+Vector Shape::Center() const
+{
+	float cx = 0.0f;
+	float cy = 0.0f;
+
+	for (auto &v : vertexList)
+	{
+		cx += v.x;
+		cy += v.y;
+	}
+	cx /= vertexCount;
+	cy /= vertexCount;
+
+	return Vector(cx, cy);
 }
 
 void Shape::Init()
