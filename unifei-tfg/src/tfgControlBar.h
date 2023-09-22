@@ -14,6 +14,7 @@ public:
 	float buttonSize;
 	float buttonPadding = 5.0f;
 	float inputScalarWidth = 80.0f;
+	bool showAboutWindow = false;
 	
 	ControlBar(Program &program);
 	virtual ~ControlBar();

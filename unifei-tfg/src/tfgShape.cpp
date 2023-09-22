@@ -286,15 +286,6 @@ void Shape::Move()
 	}
 }
 
-void Shape::MoveVertex()
-{
-	if (hotVertex >= 0)
-	{
-		vertexList[hotVertex].x += program.mouse->delta.x;
-		vertexList[hotVertex].y += program.mouse->delta.y;
-	}
-}
-
 Shape::Shape(
 	Program &program,
 	u32 vertexCount,
