@@ -34,6 +34,7 @@ private:
 	void EndFrame();
 
 public:
+	i32 hotVertex = -1;
 	std::string projectPath;
 	bool showDebugInfo = false;
 	u64 idCounter = 1;

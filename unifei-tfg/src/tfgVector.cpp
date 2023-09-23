@@ -14,7 +14,7 @@ Vector::~Vector()
 {
 }
 
-void Vector::Draw(bool showLine) const
+void Vector::Draw(float size) const
 {
 	if (!sgp_is_valid())
 	{
@@ -26,15 +26,12 @@ void Vector::Draw(bool showLine) const
 		color.g,
 		color.b,
 		color.a);
+	float halfSize = size * 0.5f;
 	sgp_draw_filled_rect(
-		x - 2.5f,
-		y - 2.5f,
-		5.0f,
-		5.0f);
-	if (showLine)
-	{
-		sgp_draw_line(0.0f, 0.0f, x, y);
-	}
+		x - halfSize,
+		y - halfSize,
+		size,
+		size);
 	sgp_reset_color();
 }
 

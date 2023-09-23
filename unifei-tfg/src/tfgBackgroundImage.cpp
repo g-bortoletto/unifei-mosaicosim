@@ -54,6 +54,12 @@ void BackgroundImage::LoadBackgroundImage(void)
 	{
 		nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &filename);
 		if (result == NFD_ERROR) return;
+		path = std::string(filename);
+	}
+
+	if (path.empty())
+	{
+		return;
 	}
 
 	int channels = 0;

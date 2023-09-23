@@ -12,7 +12,7 @@ class Program;
 class Shape : public TfgObject
 {
 private:
-	const float size = 100.0f;
+	float size = 100.0f;
 	Program &program;
 	u64 id = 0;
 	u32 vertexCount = 0;
@@ -34,7 +34,8 @@ public:
 	Color color = {};
 	bool isHot = false;
 	i32 hotVertex = -1;
-	float vertexRadius = 5.0f;
+	float vertexInitialRadius = 10.0f;
+	float vertexRadius = 10.0f;
 
 	Shape(Program &program, u32 vertexCount, Color color = { .r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f });
 	Shape(const Shape &other);

@@ -15,7 +15,7 @@ public:
 	Vector(float x = 0.0f, float y = 0.0f);
 	virtual ~Vector();
 
-	void Draw(bool showLine = false) const;
+	void Draw(float size = 5.0f) const;
 	float Distance(const Vector &other) const;
 	Vector Normalized() const;
 

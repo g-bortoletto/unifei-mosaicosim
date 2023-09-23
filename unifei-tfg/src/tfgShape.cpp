@@ -226,6 +226,7 @@ void Shape::Draw()
 	hotVertex = HotVertex(program.mouse->position);
 	if (hotVertex >= 0)
 	{
+		program.hotVertex = hotVertex;
 		vertexList[hotVertex].color = Color
 		{
 			.r = 1.0f,
@@ -233,7 +234,7 @@ void Shape::Draw()
 			.b = 1.0f,
 			.a = 1.0f,
 		};
-		vertexList[hotVertex].Draw();
+		vertexList[hotVertex].Draw(5.0f / program.zoom);
 	}
 	else
 	{
@@ -294,9 +295,10 @@ Shape::Shape(
 	vertexCount(vertexCount),
 	color(color)
 {
+	size /= program.zoom;
 	id = program.idCounter;
-	float hw = program.viewport.w * 0.5f;
-	float hh = program.viewport.h * 0.5f;
+	float hw = (program.viewport.w * 0.5f / program.zoom) - program.translation.x;
+	float hh = (program.viewport.h * 0.5f / program.zoom) - program.translation.y;
 	for (int i = 0; i < vertexCount; ++i)
 	{
 		vertexList.push_back((Vector)
@@ -394,6 +396,7 @@ void Shape::Frame()
 		return;
 	}
 
+	vertexRadius = vertexInitialRadius / program.zoom;
 	Draw();
 }
 
@@ -412,6 +415,7 @@ void Shape::Input(const sapp_event *e)
 		&& e->mouse_button == SAPP_MOUSEBUTTON_LEFT)
 	{
 		hotVertex = -1;
+		program.hotVertex = -1;
 		for (auto &v : vertexList)
 		{
 			if (program.mouse->drawSelection
