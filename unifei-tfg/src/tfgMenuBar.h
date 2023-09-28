@@ -8,12 +8,16 @@ class MenuBar : public TfgObject
 {
 private:
 	Program &program;
+	bool showAboutMenu = false;
+
 	void FileMenu();
 	void EditMenu();
 	void SettingsMenu();
+	void AboutMenu();
 	void UpdateFontSize();
 	void SetDarkTheme();
 	void SetLightTheme();
+	bool ButtonCenteredOnLine(const char *label, float alignment = 0.5f);
 
 public:
 	bool show;

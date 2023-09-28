@@ -1,9 +1,13 @@
 ﻿#include "tfgMenuBar.h"
 
 #include "tfgProgram.h"
+#include "tfgBackgroundImage.h"
 
 #include <imgui/imgui.h>
 using namespace ImGui;
+
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_app.h>
 
 void MenuBar::FileMenu()
 {
@@ -11,6 +15,7 @@ void MenuBar::FileMenu()
 	{
 		if (MenuItem("Novo projeto", "CTRL+N"))
 		{
+			program.NewProject();
 		}
 
 		if (MenuItem("Abrir projeto", "CTRL+O"))
@@ -23,14 +28,11 @@ void MenuBar::FileMenu()
 			program.Save();
 		}
 
-		if (MenuItem("Fechar projeto"))
-		{
-		}
-
 		Separator();
 
 		if (MenuItem("Sair", "ALT+F4"))
 		{
+			sapp_quit();
 		}
 
 		EndMenu();
@@ -43,25 +45,31 @@ void MenuBar::EditMenu()
 	{
 		if (MenuItem("Desfazer", "CTRL+Z"))
 		{
+			program.Undo();
 		}
 
 		if (MenuItem("Refazer", "CTRL+Y"))
 		{
+			program.Redo();
 		}
 
 		Separator();
 
 		if (MenuItem("Recortar", "CTRL+X"))
 		{
+			program.Copy();
+			program.DestroyShape();
 		}
 
 		if (MenuItem("Copiar", "CTRL+C"))
 		{
+			program.Copy();
 		}
 
 
 		if (MenuItem("Colar", "CTRL+V"))
 		{
+			program.Paste();
 		}
 
 		Separator();
@@ -103,6 +111,48 @@ void MenuBar::SettingsMenu()
 	}
 }
 
+void MenuBar::AboutMenu()
+{
+	if (BeginMenu("Ajuda"))
+	{
+		if (MenuItem("Comandos"))
+		{
+
+		}
+
+		if (MenuItem("Sobre##menu"))
+		{
+			showAboutMenu = true;
+		}
+		EndMenu();
+	}
+
+	if (showAboutMenu)
+	{
+		OpenPopup("Sobre##about");
+	}
+
+	ImVec2 center = GetMainViewport()->GetCenter();
+	SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	if (BeginPopupModal("Sobre##about", 0, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		SeparatorText("MOSAICOSIM");
+		Text("Autor: Guilherme Malaquias Bortoletto");
+		Text("Contato: gmb_er@unifei.edu.br");
+		SetItemDefaultFocus();
+		Spacing();
+		Spacing();
+		Spacing();
+		Spacing();
+		if (ButtonCenteredOnLine("Fechar"))
+		{
+			CloseCurrentPopup();
+			showAboutMenu = false;
+		}
+		EndPopup();
+	}
+}
+
 void MenuBar::UpdateFontSize()
 {
 	if (program.fontSize < 8) { program.fontSize = 8; }
@@ -139,6 +189,7 @@ void MenuBar::Frame()
 	FileMenu();
 	EditMenu();
 	SettingsMenu();
+	AboutMenu();
 
 	EndMainMenuBar();
 }
@@ -149,4 +200,18 @@ void MenuBar::Cleanup()
 
 void MenuBar::Input(const sapp_event *e)
 {
+}
+
+bool MenuBar::ButtonCenteredOnLine(const char *label, float alignment)
+{
+	ImGuiStyle &style = ImGui::GetStyle();
+
+	float size = ImGui::CalcTextSize(label).x + style.FramePadding.x * 2.0f;
+	float avail = ImGui::GetContentRegionAvail().x;
+
+	float off = (avail - size) * alignment;
+	if (off > 0.0f)
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+
+	return ImGui::Button(label);
 }

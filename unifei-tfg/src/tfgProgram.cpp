@@ -199,6 +199,20 @@ void Program::Frame()
 	menuBar->Frame();
 	controlBar->Frame();
 	image->Frame();
+	if (showImageOverlap)
+	{
+		sgp_set_color(
+			imageOverlapColor.r,
+			imageOverlapColor.g,
+			imageOverlapColor.b,
+			imageOverlapColor.a);
+		sgp_draw_filled_rect(
+			-translation.x,
+			-translation.y,
+			viewport.w / zoom,
+			viewport.h / zoom);
+		sgp_reset_color();
+	}
 	mouse->Frame();
 	for (auto &s : shapeList)
 	{
@@ -268,6 +282,39 @@ void Program::Input(const sapp_event *e)
 	{
 		Redo();
 	}
+
+	if (e->type == SAPP_EVENTTYPE_KEY_UP)
+	{
+		switch (e->key_code)
+		{
+			case SAPP_KEYCODE_N:
+			{
+				if (e->modifiers == SAPP_MODIFIER_CTRL)
+				{
+					NewProject();
+				}
+			}
+			break;
+
+			case SAPP_KEYCODE_O:
+			{
+				if (e->modifiers == SAPP_MODIFIER_CTRL)
+				{
+					Load();
+				}
+			}
+			break;
+
+			case SAPP_KEYCODE_S:
+			{
+				if (e->modifiers == SAPP_MODIFIER_CTRL)
+				{
+					Save();
+				}
+			}
+			break;
+		}
+	}
 }
 
 float Program::MenuBarHeight() const
@@ -324,6 +371,12 @@ const u64 &Program::HotPrevious(void) const
 void Program::LoadBackgroundImage(void)
 {
 	image->LoadBackgroundImage();
+}
+
+void Program::Cut(void)
+{
+	Copy();
+	DestroyShape();
 }
 
 void Program::Copy(void)
@@ -396,6 +449,21 @@ void Program::Redo(void)
 	shapeList = redoBuffer.back();
 	redoBuffer.pop_back();
 	selectionList.clear();
+}
+
+void Program::NewProject()
+{
+	sg_destroy_image(image->img);
+	image->path.clear();
+	hot = 0;
+	hotPrevious = 0;
+	shapeClipboard.clear();
+	selectionList.clear();
+	shapeList.clear();
+	undoBuffer.clear();
+	redoBuffer.clear();
+	showImageOverlap = false;
+	imageOverlapColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
 void Program::Save(void)

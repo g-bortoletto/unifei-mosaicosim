@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tfgTypes.h"
 #include "tfgObject.h"
 
 #include <sokol/sokol_gfx.h>
@@ -8,6 +9,7 @@
 class BackgroundImage : public TfgObject
 {
 public:
+	bool hide = false;
 	std::string path;
 	sg_image img = {};
 	int w;

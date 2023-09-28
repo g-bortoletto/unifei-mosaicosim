@@ -65,6 +65,9 @@ public:
 	Color clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	unsigned int fontSize = 16;
 
+	bool showImageOverlap = false;
+	Color imageOverlapColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
 	Program();
 	virtual ~Program();
 
@@ -82,6 +85,7 @@ public:
 	const u64 &Hot(void) const;
 	const u64 &HotPrevious(void) const;
 	void LoadBackgroundImage(void);
+	void Cut(void);
 	void Copy(void);
 	void Paste(void);
 
@@ -89,6 +93,7 @@ public:
 	void Undo(void);
 	void Redo(void);
 
+	void NewProject();
 	void Save(void);
 	void Load(void);
 };

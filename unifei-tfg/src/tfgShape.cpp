@@ -423,6 +423,17 @@ void Shape::Input(const sapp_event *e)
 				program.selectionList.insert(id);
 			}
 		}
+
+		bool isSelected = program.selectionList.find(id)
+			!= program.selectionList.end();
+		if (!isHot && isSelected)
+		{
+			if (hotVertex < 0
+				&& !(e->modifiers & SAPP_MODIFIER_SHIFT))
+			{
+				program.selectionList.clear();
+			}
+		}
 	}
 	
 	if (hotVertex >= 0
@@ -452,17 +463,6 @@ void Shape::Input(const sapp_event *e)
 				program.selectionList.clear();
 			}
 			program.selectionList.insert(id);
-		}
-		else
-		{
-			if (isSelected)
-			{
-				if (hotVertex < 0 
-					&& !(e->modifiers & SAPP_MODIFIER_SHIFT))
-				{
-					program.selectionList.clear();
-				}
-			}
 		}
 	}
 }

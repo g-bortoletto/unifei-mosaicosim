@@ -36,7 +36,7 @@ sapp_desc sokol_main(int argc, char **argv)
 		.height = 720,
 		.sample_count = 8,
 		.high_dpi = true,
-		.window_title = "TFG",
+		.window_title = "MosaicoSim",
 		.enable_clipboard = true,
 		.icon.sokol_default = true,
 	};

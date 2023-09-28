@@ -69,7 +69,19 @@ void ControlBar::Frame()
 		}
 		EndDisabled();
 
-		Spacing();
+		if (!program.image->path.empty() 
+			&& Checkbox("Ocultar", &program.image->hide)) {}
+		Checkbox("Sobrepor com rejunte", &program.showImageOverlap);
+		if (program.showImageOverlap)
+		{
+			Text("Cor do rejunte");
+			ColorEdit3("##CORREJUNTE", &program.imageOverlapColor.r);
+		}
+
+		for (int i = 0; i < 10; ++i)
+		{
+			Spacing();
+		}
 		SeparatorText("PEÇA");
 		Spacing();
 

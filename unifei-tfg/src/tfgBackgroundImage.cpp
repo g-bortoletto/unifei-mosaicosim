@@ -7,6 +7,7 @@
 
 #include <sokol/sokol_gp.h>
 
+
 BackgroundImage::BackgroundImage()
 {
 	img = { SG_INVALID_ID };
@@ -27,7 +28,7 @@ void BackgroundImage::Init()
 
 void BackgroundImage::Frame()
 {
-	if (img.id != SG_INVALID_ID)
+	if (!hide && img.id != SG_INVALID_ID && !path.empty())
 	{
 		sgp_set_image(0, img);
 		sgp_draw_textured_rect(
