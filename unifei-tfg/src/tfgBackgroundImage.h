@@ -9,7 +9,7 @@ class BackgroundImage : public TfgObject
 {
 public:
 	std::string path;
-	sg_image img;
+	sg_image img = {};
 	int w;
 	int h;
 

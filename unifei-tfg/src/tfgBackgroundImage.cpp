@@ -53,7 +53,7 @@ void BackgroundImage::LoadBackgroundImage(void)
 	if (path.empty())
 	{
 		nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &filename);
-		if (result == NFD_ERROR) return;
+		if (result == NFD_ERROR || result == NFD_CANCEL) return;
 		path = std::string(filename);
 	}
 

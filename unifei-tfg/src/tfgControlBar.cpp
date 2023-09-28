@@ -34,7 +34,7 @@ void ControlBar::Frame()
 		| ImGuiWindowFlags_NoCollapse
 		//| ImGuiWindowFlags_NoBackground
 		| ImGuiWindowFlags_NoTitleBar;
-	SetNextWindowPos(ImVec2(0.0f, 0.0f));
+	SetNextWindowPos(ImVec2(0.0f, program.MenuBarHeight()));
 	SetNextWindowSizeConstraints(
 		ImVec2(250.0f, program.window.h), 
 		ImVec2(program.window.w / 2, program.window.h));
@@ -46,85 +46,78 @@ void ControlBar::Frame()
 		program.viewport = (Rect)
 		{
 			.x = width,
-			.y = 0.0f,
-			.w = program.window.w - width,
-			.h = program.window.h,
+			.y = program.MenuBarHeight(),
+			.w = program.window.w < width
+					? width
+					: program.window.w - width,
+			.h = program.window.h < program.MenuBarHeight()
+					? program.MenuBarHeight()
+					: program.window.h - program.MenuBarHeight(),
 		};
 
 		static int vertices = 3;
 		static unsigned char step = 1;
 
-		if (Button("CARREGAR IMAGEM", ImVec2(buttonSize, 0.0f))) 
+		SeparatorText("IMAGEM DE FUNDO");
+		Spacing();
+
+		BeginDisabled(!program.image->path.empty());
+		if (Button("Carregar", ImVec2(buttonSize, 0.0f))) 
 		{
 			program.image->path.clear();
 			program.LoadBackgroundImage();
 		}
+		EndDisabled();
 
-		SetNextItemWidth(inputScalarWidth);
+		Spacing();
+		SeparatorText("PEÇA");
+		Spacing();
+
+		if (!program.selectionList.empty())
+		{
+			currentColor = program
+				.shapeList
+				.find(*program.selectionList.begin())
+				->second.color;
+		}
+		Text("Cor");
+		SetNextItemWidth(buttonSize);
+		if (ColorPicker4(
+			"## COR PEÇA",
+			&currentColor.r,
+			ImGuiColorEditFlags_NoSidePreview
+			| ImGuiColorEditFlags_PickerHueWheel
+			| ImGuiColorEditFlags_DisplayRGB
+			| ImGuiColorEditFlags_DisplayHex
+			| ImGuiColorEditFlags_NoSmallPreview))
+		{
+			for (auto &s : program.selectionList)
+			{
+				program.shapeList.find(s)->second.color = currentColor;
+			}
+		}
+
+		Spacing();
+		Text("%s", "Número de lados");
+		SetNextItemWidth(buttonSize);
 		if (InputScalar("## ADD_PEÇA", ImGuiDataType_U8, &vertices, &step))
 		{
 			if (vertices < 3) vertices = 3;
 			if (vertices > 9) vertices = 9;
 		}
-		SameLine();
-		if (Button(
-			"ADICIONAR PEÇA", 
-			ImVec2(buttonSize - inputScalarWidth - 8.0f, 0.0f))) 
+		
+		if (Button("Adicionar", ImVec2(buttonSize, 0.0f))) 
 		{ 
-			program.CreateShape(vertices); 
+			u64 created = program.CreateShape(vertices);
+			program.shapeList.find(created)->second.color = currentColor;
 		}
 
-		if (Button("REMOVER PEÇA", ImVec2(buttonSize, 0.0f))) 
+		BeginDisabled(program.selectionList.empty());
+		if (Button("Remover", ImVec2(buttonSize, 0.0f)))
 		{
 			program.DestroyShape();
 		}
-		if (Button("SALVAR PROJETO", ImVec2(buttonSize, 0.0f))) 
-		{
-			program.Save();
-		}
-		if (Button("CARREGAR PROJETO", ImVec2(buttonSize, 0.0f)))
-		{
-			program.Load();
-		}
-
-		if (!program.selectionList.empty())
-		{
-			SetNextItemWidth(buttonSize);
-			ColorPicker4(
-				"## COR PEÇA",
-				&program
-					.shapeList
-					.find(*program.selectionList.begin())
-					->second.color.r,
-				ImGuiColorEditFlags_NoSidePreview);
-		}
-
-		if (Button("SOBRE", ImVec2(buttonSize, 0.0f)))
-		{
-			showAboutWindow = true;
-		}
-
-		if (showAboutWindow)
-		{
-			Begin("Sobre", &showAboutWindow);
-			
-			SeparatorText("Simulador de Mosaicos");
-			Text("%s", "Desenvolvido por: Guilherme Bortoletto");
-			Text("%s", "Contato: gmb_er@unifei.edu.br");
-			SeparatorText("Controles");
-			InstructionText("Copiar:", "CTRL+C");
-			InstructionText("Colar:", "CTRL+V");
-			InstructionText("Desfazer:", "CTRL+Z");
-			InstructionText("Refazer:", "CTRL+Y");
-			InstructionText("Adicionar/Remover da seleção:", "SHIFT+CLICK_ESQUERDO");
-			InstructionText("Mover múltiplas peças:", "SHIFT+SEGURAR_BOTAO_ESQUERDO");
-			InstructionText("Redimensionar peça em destaque:", "SHIFT+SCROLL");
-			InstructionText("Zoom:", "SCROLL");
-			InstructionText("Movimentar a câmera:", "SEGURAR_BOTAO_DIREITO");
-			InstructionText("Restaurar câmera original:", "CLICK_SCROLL");
-
-			End();
-		}
+		EndDisabled();
 
 		End();
 	}

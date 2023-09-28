@@ -250,6 +250,8 @@ void Shape::Draw()
 	if (program.selectionList.find(id) != program.selectionList.end())
 	{
 		sgp_push_transform();
+		Vector center = Center();
+		sgp_scale_at(1.1f, 1.1f, center.x, center.y);
 		sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
 
 		for (int i = 0; i < (vertexCount - 1); ++i)

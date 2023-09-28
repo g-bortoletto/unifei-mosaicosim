@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 
+class MenuBar;
 class ControlBar;
 class BackgroundImage;
 class Mouse;
@@ -20,6 +21,8 @@ class DebugInfo;
 class Program : public TfgObject
 {
 private:
+	bool showDemo = false;
+
 	u64 hot = 0;
 	u64 hotPrevious = 0;
 
@@ -42,6 +45,7 @@ public:
 	Rect window;
 	Rect viewport;
 
+	MenuBar *menuBar = 0;
 	ControlBar *controlBar = 0;
 	BackgroundImage *image = 0;
 	Mouse *mouse = 0;
@@ -58,6 +62,11 @@ public:
 	float zoom = 1.0f;
 	Vector translation = {};
 
+	bool darkMode = true;
+
+	Color clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+	unsigned int fontSize = 16;
+
 	Program();
 	virtual ~Program();
 
@@ -65,6 +74,8 @@ public:
 	virtual void Frame() override;
 	virtual void Cleanup() override;
 	virtual void Input(const sapp_event *e) override;
+
+	float MenuBarHeight() const;
 
 	u64 CreateShape(u32 vertices);
 	u64 CopyShape(Shape &other);

@@ -154,6 +154,7 @@
     <ClCompile Include="src\tfgControlBar.cpp" />
     <ClCompile Include="src\tfgDebugInfo.cpp" />
     <ClCompile Include="src\tfgMain.cpp" />
+    <ClCompile Include="src\tfgMenuBar.cpp" />
     <ClCompile Include="src\tfgMouse.cpp" />
     <ClCompile Include="src\tfgShape.cpp" />
     <ClCompile Include="src\tfgProgram.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="src\tfgRect.h" />
     <ClInclude Include="src\tfgTypes.h" />
     <ClInclude Include="src\tfgVector.h" />
+    <ClInclude Include="src\tfgMenuBar.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

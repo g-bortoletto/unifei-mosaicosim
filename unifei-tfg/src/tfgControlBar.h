@@ -2,6 +2,7 @@
 #define TFG_CONTROLBAR_H
 
 #include "tfgObject.h"
+#include "tfgTypes.h"
 
 class Program;
 
@@ -14,7 +15,7 @@ public:
 	float buttonSize;
 	float buttonPadding = 5.0f;
 	float inputScalarWidth = 80.0f;
-	bool showAboutWindow = false;
+	Color currentColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	
 	ControlBar(Program &program);
 	virtual ~ControlBar();

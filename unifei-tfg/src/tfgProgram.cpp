@@ -4,6 +4,7 @@
 #pragma clang diagnostic ignored "-Wreorder-init-list"
 
 #include "tfgProgram.h"
+#include "tfgMenuBar.h"
 #include "tfgControlBar.h"
 #include "tfgBackgroundImage.h"
 #include "tfgMouse.h"
@@ -59,7 +60,7 @@ void Program::InitImGui()
 	fontCfg.FontDataOwnedByAtlas = false;
 	fontCfg.OversampleH = 2;
 	fontCfg.OversampleV = 2;
-	fontCfg.RasterizerMultiply = 1.5f;
+	fontCfg.RasterizerMultiply = 1.0f;
 	io.Fonts->AddFontFromMemoryCompressedTTF(
 		segoeui_compressed_data,
 		segoeui_compressed_size,
@@ -126,7 +127,7 @@ void Program::BeginFrame()
 		.dpi_scale = sapp_dpi_scale(),
 	});
 
-	sgp_set_color(0.0f, 0.0f, 0.0f, 1.0f);
+	sgp_set_color(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	sgp_clear();
 	sgp_reset_color();
 
@@ -159,6 +160,7 @@ void Program::EndFrame()
 
 Program::Program()
 {
+	menuBar = new MenuBar(*this);
 	controlBar = new ControlBar(*this);
 	image = new BackgroundImage();
 	mouse = new Mouse(*this);
@@ -175,6 +177,7 @@ Program::~Program()
 	delete mouse;
 	delete image;
 	delete controlBar;
+	delete menuBar;
 }
 void Program::Init()
 {
@@ -190,6 +193,14 @@ void Program::Frame()
 {
 	BeginFrame();
 
+	if (showDemo)
+	{
+		ImGui::ShowDemoWindow(&showDemo);
+		EndFrame();
+		return;
+	}
+
+	menuBar->Frame();
 	controlBar->Frame();
 	image->Frame();
 	mouse->Frame();
@@ -214,6 +225,14 @@ void Program::Cleanup()
 void Program::Input(const sapp_event *e)
 {
 	simgui_handle_event(e);
+
+	if (e->type == SAPP_EVENTTYPE_KEY_DOWN &&
+		e->key_code == SAPP_KEYCODE_9 &&
+		e->modifiers == (SAPP_MODIFIER_CTRL | SAPP_MODIFIER_SHIFT))
+	{
+		showDemo = !showDemo;
+	}
+
 	mouse->Input(e);
 	for (auto &s : shapeList)
 	{
@@ -258,6 +277,12 @@ void Program::Input(const sapp_event *e)
 		Redo();
 	}
 }
+
+float Program::MenuBarHeight() const
+{
+	return menuBar->height;
+}
+
 u64 Program::CreateShape(u32 vertices)
 {
 	UpdateUndoBuffer();
@@ -387,6 +412,7 @@ void Program::Save(void)
 	if (projectPath.empty())
 	{
 		nfdresult_t result = NFD_SaveDialog("tfg", 0, &pp);
+		if (result == NFD_CANCEL) { return; }
 		if (result == NFD_OKAY)
 		{
 			projectPath = std::string(pp) + ".tfg";
@@ -448,6 +474,7 @@ void Program::Load(void)
 {
 	nfdchar_t *pp = 0;
 	nfdresult_t result = NFD_OpenDialog("tfg", 0, &pp);
+	if (result == NFD_CANCEL) { return; }
 	if (result == NFD_OKAY)
 	{
 		projectPath = std::string(pp);
