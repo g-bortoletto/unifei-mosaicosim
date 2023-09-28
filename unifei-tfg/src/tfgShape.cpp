@@ -6,15 +6,12 @@
 #include <sokol/sokol_gfx.h>
 #include <sokol/sokol_gp.h>
 
-#ifdef _DEBUG
 #include "tfgDebugInfo.h"
-#endif
 
 static const float PI = 3.14159265359f;
 
 int Shape::IsLeft(Vector p0, Vector p1, Vector p2) const
 {
-#ifdef _DEBUG
 	if (program.debugInfo->show && sgp_is_valid())
 	{
 		sgp_push_transform();
@@ -33,7 +30,6 @@ int Shape::IsLeft(Vector p0, Vector p1, Vector p2) const
 		sgp_reset_color();
 		sgp_pop_transform();
 	}
-#endif
 
 	return ((p1.x - p0.x) * (p2.y - p0.y)
 		- (p2.x - p0.x) * (p1.y - p0.y));	
@@ -119,7 +115,6 @@ void Shape::Highlight()
 
 void Shape::DrawDebugLineToVertices()
 {
-#ifdef _DEBUG
 	if (program.debugInfo->show)
 	{
 		sgp_push_transform();
@@ -141,7 +136,6 @@ void Shape::DrawDebugLineToVertices()
 		sgp_reset_blend_mode();
 		sgp_pop_transform();
 	}
-#endif
 }
 
 void Shape::DrawWireTriangle(Vector a, Vector b, Vector c) const

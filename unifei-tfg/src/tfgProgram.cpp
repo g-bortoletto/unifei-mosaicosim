@@ -164,16 +164,12 @@ Program::Program()
 	controlBar = new ControlBar(*this);
 	image = new BackgroundImage();
 	mouse = new Mouse(*this);
-#ifdef _DEBUG
 	debugInfo = new DebugInfo(*this);
-#endif
 }
 
 Program::~Program()
 {
-#ifdef _DEBUG
 	delete debugInfo;
-#endif
 	delete mouse;
 	delete image;
 	delete controlBar;
@@ -208,12 +204,10 @@ void Program::Frame()
 	{
 		s.second.Frame();
 	}
-#ifdef _DEBUG
 	if (debugInfo->show)
 	{
 		debugInfo->Frame();
 	}
-#endif
 
 	EndFrame();
 }
@@ -238,9 +232,7 @@ void Program::Input(const sapp_event *e)
 	{
 		s.second.Input(e);
 	}
-#ifdef _DEBUG
 	debugInfo->Input(e);
-#endif
 
 	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN
 		&& e->mouse_button == SAPP_MOUSEBUTTON_LEFT

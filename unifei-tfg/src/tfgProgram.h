@@ -49,9 +49,7 @@ public:
 	ControlBar *controlBar = 0;
 	BackgroundImage *image = 0;
 	Mouse *mouse = 0;
-#ifdef _DEBUG
 	DebugInfo *debugInfo = 0;
-#endif
 
 	std::map<u64, Shape> shapeList;
 	std::set<u64> selectionList;

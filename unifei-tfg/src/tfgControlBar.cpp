@@ -87,7 +87,6 @@ void ControlBar::Frame()
 			&currentColor.r,
 			ImGuiColorEditFlags_NoSidePreview
 			| ImGuiColorEditFlags_PickerHueWheel
-			| ImGuiColorEditFlags_DisplayRGB
 			| ImGuiColorEditFlags_DisplayHex
 			| ImGuiColorEditFlags_NoSmallPreview))
 		{

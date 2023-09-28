@@ -47,7 +47,7 @@ void Mouse::Input(const sapp_event *e)
 	position = Vector
 	{
 		((e->mouse_x - program.viewport.x) / program.zoom) - program.translation.x,
-		(e->mouse_y / program.zoom) - program.translation.y,
+		((e->mouse_y - program.viewport.y) / program.zoom) - program.translation.y,
 	};
 
 	delta = Vector

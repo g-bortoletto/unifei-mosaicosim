@@ -98,9 +98,11 @@ void DebugInfo::Cleanup()
 
 void DebugInfo::Input(const sapp_event *e)
 {
+#ifdef _DEBUG
 	if (e->type == SAPP_EVENTTYPE_KEY_UP &&
 		e->key_code == SAPP_KEYCODE_0)
 	{
 		show = !show;
 	}
+#endif
 }
