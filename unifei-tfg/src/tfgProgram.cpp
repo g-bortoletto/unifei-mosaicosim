@@ -127,7 +127,11 @@ void Program::BeginFrame()
 		.dpi_scale = sapp_dpi_scale(),
 	});
 
-	sgp_set_color(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+	sgp_set_color(
+		clearColor.r, 
+		clearColor.g, 
+		clearColor.b, 
+		clearColor.a);
 	sgp_clear();
 	sgp_reset_color();
 
@@ -206,11 +210,19 @@ void Program::Frame()
 			imageOverlapColor.g,
 			imageOverlapColor.b,
 			imageOverlapColor.a);
-		sgp_draw_filled_rect(
-			-translation.x,
-			-translation.y,
-			viewport.w / zoom,
-			viewport.h / zoom);
+		float x = 0.0f;
+		float y = 0.0f;
+		float w = 0.0f;
+		float h = 0.0f;
+		if (image != 0 && !image->path.empty())
+		{
+			sg_image_desc im = sg_query_image_desc(image->img);
+			x = 0.0f;
+			y = 0.0f;
+			w = im.width;
+			h = im.height;
+		}
+		sgp_draw_filled_rect(x, y, w, h);
 		sgp_reset_color();
 	}
 	mouse->Frame();
@@ -234,19 +246,23 @@ void Program::Input(const sapp_event *e)
 {
 	simgui_handle_event(e);
 
-	if (e->type == SAPP_EVENTTYPE_KEY_DOWN &&
-		e->key_code == SAPP_KEYCODE_9 &&
-		e->modifiers == (SAPP_MODIFIER_CTRL | SAPP_MODIFIER_SHIFT))
-	{
-		showDemo = !showDemo;
-	}
-
 	mouse->Input(e);
-	for (auto &s : shapeList)
-	{
-		s.second.Input(e);
-	}
+	for (auto &s : shapeList) { s.second.Input(e); }
 	debugInfo->Input(e);
+
+	switch (e->type)
+	{
+		case SAPP_EVENTTYPE_KEY_DOWN: 
+		{
+			HandleKeyDown(e);
+		} 
+		break;
+		case SAPP_EVENTTYPE_KEY_UP: 
+		{
+			HandleKeyUp(e);
+		} 
+		break;
+	}
 
 	if (e->type == SAPP_EVENTTYPE_MOUSE_DOWN
 		&& e->mouse_button == SAPP_MOUSEBUTTON_LEFT
@@ -254,67 +270,132 @@ void Program::Input(const sapp_event *e)
 	{
 		UpdateUndoBuffer();
 	}
+}
 
-	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
-		&& e->key_code == SAPP_KEYCODE_C
-		&& e->modifiers == SAPP_MODIFIER_CTRL)
+void Program::HandleKeyUp(const sapp_event *e)
+{
+	switch (e->key_code)
 	{
-		Copy();
-	}
-
-	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
-		&& e->key_code == SAPP_KEYCODE_V
-		&& e->modifiers == SAPP_MODIFIER_CTRL)
-	{
-		Paste();
-	}
-
-	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
-		&& e->key_code == SAPP_KEYCODE_Z
-		&& e->modifiers == SAPP_MODIFIER_CTRL)
-	{
-		Undo();
-	}
-
-	if (e->type == SAPP_EVENTTYPE_KEY_DOWN
-		&& e->key_code == SAPP_KEYCODE_Y
-		&& e->modifiers == SAPP_MODIFIER_CTRL)
-	{
-		Redo();
-	}
-
-	if (e->type == SAPP_EVENTTYPE_KEY_UP)
-	{
-		switch (e->key_code)
+		case SAPP_KEYCODE_A:
 		{
-			case SAPP_KEYCODE_N:
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
 			{
-				if (e->modifiers == SAPP_MODIFIER_CTRL)
-				{
-					NewProject();
-				}
+				SelectAll();
 			}
-			break;
-
-			case SAPP_KEYCODE_O:
-			{
-				if (e->modifiers == SAPP_MODIFIER_CTRL)
-				{
-					Load();
-				}
-			}
-			break;
-
-			case SAPP_KEYCODE_S:
-			{
-				if (e->modifiers == SAPP_MODIFIER_CTRL)
-				{
-					Save();
-				}
-			}
-			break;
 		}
+		break;
+
+		case SAPP_KEYCODE_D:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Copy();
+				Paste();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_N:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				NewProject();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_O:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Load();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_S:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Save();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_DELETE:
+		{
+			DestroyShape();
+		}
+		break;
 	}
+}
+
+void Program::SelectAll()
+{
+	selectionList.clear();
+	for (auto &sPair : shapeList)
+	{
+		selectionList.emplace(sPair.first);
+	}
+}
+
+void Program::HandleKeyDown(const sapp_event *e)
+{
+	switch (e->key_code)
+	{
+		case SAPP_KEYCODE_C: 
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Copy();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_V:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Paste();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_X:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Cut();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_Y:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Redo();
+			}
+		}
+		break;
+
+		case SAPP_KEYCODE_Z:
+		{
+			if (e->modifiers == SAPP_MODIFIER_CTRL)
+			{
+				Undo();
+			}
+		}
+		break;
+	}
+}
+
+void Program::HandleMouseUp(const sapp_event *e)
+{
+}
+
+void Program::HandleMouseDown(const sapp_event *e)
+{
 }
 
 float Program::MenuBarHeight() const
@@ -335,9 +416,10 @@ u64 Program::CopyShape(Shape &other)
 	UpdateUndoBuffer();
 	std::pair<u64, Shape> shapePair(idCounter, Shape(other, idCounter));
 	shapeList.insert(shapePair);
+	selectionList.insert(idCounter);
 	for (auto &v : shapeList.find(idCounter)->second.vertexList)
 	{
-		v.x += 20.0f;
+		v.x += 180.0f;
 		v.y += 20.0f;
 	}
 	return idCounter++;
@@ -400,6 +482,7 @@ void Program::Paste(void)
 		return;
 	}
 
+	selectionList.clear();
 	for (auto &s : shapeClipboard)
 	{
 		CopyShape(s);
@@ -464,6 +547,7 @@ void Program::NewProject()
 	redoBuffer.clear();
 	showImageOverlap = false;
 	imageOverlapColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 }
 
 void Program::Save(void)

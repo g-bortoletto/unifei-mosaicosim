@@ -58,25 +58,27 @@ void ControlBar::Frame()
 		static int vertices = 3;
 		static unsigned char step = 1;
 
-		SeparatorText("IMAGEM DE FUNDO");
+		SeparatorText("IMAGEM DE REFERÊNCIA");
 		Spacing();
 
 		BeginDisabled(!program.image->path.empty());
-		if (Button("Carregar", ImVec2(buttonSize, 0.0f))) 
+		if (Button("Adicionar##refencia", ImVec2(buttonSize, 0.0f))) 
 		{
 			program.image->path.clear();
 			program.LoadBackgroundImage();
 		}
 		EndDisabled();
 
-		if (!program.image->path.empty() 
-			&& Checkbox("Ocultar", &program.image->hide)) {}
-		Checkbox("Sobrepor com rejunte", &program.showImageOverlap);
-		if (program.showImageOverlap)
+		BeginDisabled(program.image->path.empty());
+		if (Button("Remover##refencia", ImVec2(buttonSize, 0.0f)))
 		{
-			Text("Cor do rejunte");
-			ColorEdit3("##CORREJUNTE", &program.imageOverlapColor.r);
+			program.image->path.clear();
+			sg_destroy_image(program.image->img);
 		}
+		EndDisabled();
+
+		if (Checkbox("Ocultar", &program.image->hide)) 
+		{}
 
 		for (int i = 0; i < 10; ++i)
 		{
@@ -94,13 +96,10 @@ void ControlBar::Frame()
 		}
 		Text("Cor");
 		SetNextItemWidth(buttonSize);
-		if (ColorPicker4(
+		if (ColorEdit3(
 			"## COR PEÇA",
 			&currentColor.r,
-			ImGuiColorEditFlags_NoSidePreview
-			| ImGuiColorEditFlags_PickerHueWheel
-			| ImGuiColorEditFlags_DisplayHex
-			| ImGuiColorEditFlags_NoSmallPreview))
+			ImGuiColorEditFlags_PickerHueWheel))
 		{
 			for (auto &s : program.selectionList)
 			{
@@ -117,18 +116,34 @@ void ControlBar::Frame()
 			if (vertices > 9) vertices = 9;
 		}
 		
-		if (Button("Adicionar", ImVec2(buttonSize, 0.0f))) 
+		if (Button("Adicionar##peça", ImVec2(buttonSize, 0.0f))) 
 		{ 
 			u64 created = program.CreateShape(vertices);
 			program.shapeList.find(created)->second.color = currentColor;
 		}
 
 		BeginDisabled(program.selectionList.empty());
-		if (Button("Remover", ImVec2(buttonSize, 0.0f)))
+		if (Button("Remover##peça", ImVec2(buttonSize, 0.0f)))
 		{
 			program.DestroyShape();
 		}
 		EndDisabled();
+
+		BeginDisabled(program.shapeList.empty());
+		if (Button("Limpar##peça", ImVec2(buttonSize, 0.0f)))
+		{
+			program.SelectAll();
+			program.DestroyShape();
+		}
+		EndDisabled();
+
+		for (int i = 0; i < 10; ++i) Spacing();
+		SeparatorText("REJUNTE");
+		Spacing();
+		Checkbox("Sobrepor imagem de referência", &program.showImageOverlap);
+		Text("Cor");
+		SetNextItemWidth(buttonSize);
+		ColorEdit3("##CORREJUNTE", &program.imageOverlapColor.r, ImGuiColorEditFlags_PickerHueWheel);
 
 		End();
 	}

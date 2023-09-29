@@ -9,6 +9,7 @@ class MenuBar : public TfgObject
 private:
 	Program &program;
 	bool showAboutMenu = false;
+	bool showHelp = false;
 
 	void FileMenu();
 	void EditMenu();
