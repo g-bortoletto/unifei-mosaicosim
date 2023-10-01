@@ -59,7 +59,7 @@ static void COMUninit(HRESULT coResult)
 static void CopyWCharToNFDChar( const wchar_t *inStr, nfdchar_t **outStr )
 {
     int inStrCharacterCount = static_cast<int>(wcslen(inStr)); 
-    int bytesNeeded = WideCharToMultiByte( CP_UTF8, 0,
+    int bytesNeeded = WideCharToMultiByte( CP_ACP, 0,
                                            inStr, inStrCharacterCount,
                                            NULL, 0, NULL, NULL );    
     assert( bytesNeeded );
@@ -69,7 +69,7 @@ static void CopyWCharToNFDChar( const wchar_t *inStr, nfdchar_t **outStr )
     if ( !*outStr )
         return;
 
-    int bytesWritten = WideCharToMultiByte( CP_UTF8, 0,
+    int bytesWritten = WideCharToMultiByte( CP_ACP, 0,
                                             inStr, -1,
                                             *outStr, bytesNeeded,
                                             NULL, NULL );
