@@ -45,6 +45,7 @@ public:
 	const u64 Id(void) const;
 	void Scale(float amount);
 	Vector Center() const;
+	void Move(Vector amount);
 
 	virtual void Init() override;
 	virtual void Frame() override;

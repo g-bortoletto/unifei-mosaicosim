@@ -94,7 +94,17 @@ void Mouse::Input(const sapp_event *e)
 
 	if (e->type == SAPP_EVENTTYPE_MOUSE_SCROLL)
 	{
+		if (GetIO().WantCaptureMouse)
+		{
+			return;
+		}
+		zoomPosition = 
+		{ 
+			((e->mouse_x - program.viewport.x) / program.zoom) - program.translation.x,
+			((e->mouse_y - program.viewport.y) / program.zoom) - program.translation.y
+		};
 		scroll = e->scroll_y;
+
 		if (e->modifiers == SAPP_MODIFIER_SHIFT)
 		{
 			if (program.Hot())

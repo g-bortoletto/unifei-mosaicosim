@@ -20,6 +20,7 @@ public:
 	Vector delta = {};
 	Vector lastPosition = {};
 	Vector lastLeftDownPosition = {};
+	Vector zoomPosition = {};
 
 	ImGuiMouseCursor mouseCursor = ImGuiMouseCursor_Arrow;
 

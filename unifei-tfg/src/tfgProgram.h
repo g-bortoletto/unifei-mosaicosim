@@ -77,6 +77,7 @@ public:
 	virtual void Input(const sapp_event *e) override;
 
 	void HandleKeyUp(const sapp_event *e);
+	void MoveShape(Vector amount, bool fast);
 	void SelectAll();
 	void HandleKeyDown(const sapp_event *e);
 	void HandleMouseUp(const sapp_event *e);

@@ -172,7 +172,8 @@ void MenuBar::AboutMenu()
 	if (!showHelp) return;
 	SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 	SetNextWindowSize({ 500, 480 }, ImGuiCond_Appearing);
-	if (Begin("Sobre##help", &showHelp, ImGuiWindowFlags_NoCollapse))
+	if (BeginPopupModal("Sobre##help", &showHelp, 
+		ImGuiWindowFlags_NoCollapse))
 	{
 		ImVec4 corDestaque(
 			35.0f / 255.0f, 
@@ -182,24 +183,29 @@ void MenuBar::AboutMenu()
 
 		SeparatorText("INSTRUÇÕES");
 
-		Text("%s", "O MosaicoSIM serve para simular"
-			"a criação de um mosaico artístico.");
+		TextWrapped(
+			"O MosaicoSIM serve para simular a "
+			"criação de um mosaico artístico.");
+
 		if (TreeNode("Processo"))
 		{
 			TextColored(corDestaque, "%s", "1.");
 			SameLine();
-			Text("Carregar uma imagem de referência. "
-				"Ela aparecerá como o fundo do programa\n"
-				"e tem a finalidade de ser utilizada como um modelo"
-				" a ser preenchido por peças.");
+			TextWrapped(
+				"Carregar uma imagem de referência. "
+				"Ela aparecerá como o fundo do programa "
+				"e tem a finalidade de ser utilizada como um modelo "
+				"a ser preenchido por peças.");
 
 			TextColored(corDestaque, "%s", "2.");
 			SameLine();
-			Text("Criar peças e manipulá-las de maneira a formar um mosaico.");
+			TextWrapped(
+				"Criar peças e manipulá-las de maneira "
+				"a formar um mosaico.");
 
 			TextColored(corDestaque, "%s", "3.");
 			SameLine();
-			Text("Escolher uma cor para o rejunte.");
+			TextWrapped("Escolher uma cor para o rejunte.");
 
 			TreePop();
 		}
@@ -211,16 +217,16 @@ void MenuBar::AboutMenu()
 				if (TreeNode("Arquivo"))
 				{
 					TextColored(corDestaque, "Novo projeto:"); SameLine();
-					Text("iniciar um novo projeto."); Spacing();
+					TextWrapped("iniciar um novo projeto."); Spacing();
 
 					TextColored(corDestaque, "Abrir projeto:"); SameLine();
-					Text("abrir um projeto do disco."); Spacing();
+					TextWrapped("abrir um projeto do disco."); Spacing();
 
 					TextColored(corDestaque, "Salvar projeto:"); SameLine();
-					Text("salvar projeto atual no disco."); Spacing();
+					TextWrapped("salvar projeto atual no disco."); Spacing();
 
 					TextColored(corDestaque, "Sair:"); SameLine();
-					Text("fecha o programa."); Spacing();
+					TextWrapped("fecha o programa."); Spacing();
 
 					TreePop();
 				}
@@ -228,28 +234,29 @@ void MenuBar::AboutMenu()
 				if (TreeNode("Editar"))
 				{
 					TextColored(corDestaque, "Selecionar tudo:"); SameLine();
-					Text("selecionar todas as peças."); Spacing();
+					TextWrapped("selecionar todas as peças."); Spacing();
 
 					TextColored(corDestaque, "Desfazer:"); SameLine();
-					Text("desfazer última ação."); Spacing();
+					TextWrapped("desfazer última ação."); Spacing();
 
 					TextColored(corDestaque, "Refazer:"); SameLine();
-					Text("refazer última ação."); Spacing();
+					TextWrapped("refazer última ação."); Spacing();
 
 					TextColored(corDestaque, "Recortar:"); SameLine();
-					Text("recortar peças selecionadas."); Spacing();
+					TextWrapped("recortar peças selecionadas."); Spacing();
 
 					TextColored(corDestaque, "Copiar:"); SameLine();
-					Text("copiar peças selecionadas."); Spacing();
+					TextWrapped("copiar peças selecionadas."); Spacing();
 
 					TextColored(corDestaque, "Colar:"); SameLine();
-					Text("colar peças selecionadas."); Spacing();
+					TextWrapped("colar peças selecionadas."); Spacing();
 
 					TextColored(corDestaque, "Duplicar:"); SameLine();
-					Text("duplicar peças selecionadas."); Spacing();
+					TextWrapped("duplicar peças selecionadas."); Spacing();
 
 					TextColored(corDestaque, "Alterar cor de fundo:"); SameLine();
-					Text("permite alterar a cor do fundo da área de trabalho."); Spacing();
+					TextWrapped("permite alterar a cor do fundo da área "
+						"de trabalho."); Spacing();
 					
 					TreePop();
 				}
@@ -257,21 +264,23 @@ void MenuBar::AboutMenu()
 				if (TreeNode("Opções"))
 				{
 					TextColored(corDestaque, "Tema da interface:"); SameLine();
-					Text("permite selecionar que a interface seja clara ou escura."); Spacing();
+					TextWrapped("permite selecionar que a interface "
+						"seja clara ou escura."); Spacing();
 
 					TextColored(corDestaque, "Tamanho da fonte:"); SameLine();
-					Text("permite aumentar ou diminuir o tamanho da letra\ndo programa."); Spacing();
+					TextWrapped("permite aumentar ou diminuir o tamanho "
+						"da letra do programa."); Spacing();
 
 					TreePop();
 				}
 
 				if (TreeNode("Ajuda"))
 				{
-					TextColored(corDestaque, "Comandos:"); SameLine();
-					Text("Abre esta janela."); Spacing();
+					TextColored(corDestaque, "Instruções:"); SameLine();
+					TextWrapped("Abre esta janela."); Spacing();
 
 					TextColored(corDestaque, "Sobre:"); SameLine();
-					Text("Mostra informações sobre o autor do programa."); Spacing();
+					TextWrapped("Mostra informações sobre o autor do programa."); Spacing();
 
 					TreePop();
 				}
@@ -283,66 +292,66 @@ void MenuBar::AboutMenu()
 				if (TreeNode("Imagem"))
 				{
 					TextColored(corDestaque, "[Adicionar]");
-					Text("Abre uma janela para adicionar uma imagem do disco\n"
+					TextWrapped("Abre uma janela para adicionar uma imagem do disco "
 						"como referência no fundo do programa.");
 					Spacing();
 					
 					TextColored(corDestaque, "[Remover]");
-					Text("Remove a imagem atual do fundo do programa.");
+					TextWrapped("Remove a imagem atual do fundo do programa.");
 					Spacing();
 					
 					TextColored(corDestaque, "[ ] Ocultar");
-					Text("Oculta a imagem do fundo do programa.");
+					TextWrapped("Oculta a imagem do fundo do programa.");
 					TreePop();
 				}
 				if (TreeNode("Peça"))
 				{
 					TextColored(corDestaque, "[R][G][B] Cor");
-					Text("Seleciona a cor da peça selecionada ou que será criada.\n"
-						"\t- R representa a quantidade de vermelho da cor. Varia de 0 a 255.\n"
-						"\t- G representa a quantidade de verde da cor. Varia de 0 a 255.\n"
-						"\t- B representa a quantidade de azul da cor. Varia de 0 a 255.\n"
-						"Clicar no quadrado de previsão de cor abrirá uma janela de seleção\n"
-						" que possibilita a escolha visual da cor com precisão.\n"
-						"OBS: É possível clicar nas caixas de R, G, e B e arrastar o mouse\n"
+					TextWrapped("Seleciona a cor da peça selecionada ou que será criada. "
+						"\n\t- R representa a quantidade de vermelho da cor. Varia de 0 a 255. "
+						"\n\t- G representa a quantidade de verde da cor. Varia de 0 a 255. "
+						"\n\t- B representa a quantidade de azul da cor. Varia de 0 a 255. "
+						"\nClicar no quadrado de previsão de cor abrirá uma janela de seleção "
+						"que possibilita a escolha visual da cor com precisão. "
+						"\nOBS: É possível clicar nas caixas de R, G, e B e arrastar o mouse "
 						"para a esquerda e direita para modificar seu valor.");
 					Spacing();
 					
 					TextColored(corDestaque, "[Número de lados][-][+]");
-					Text("representa o número de lados da peça a ser criada.\n"
-						"Clique no [-] para diminuir e no [+] para aumentar.\nOs "
+					TextWrapped("representa o número de lados da peça a ser criada. "
+						"Clique no [-] para diminuir e no [+] para aumentar. Os "
 						"valores variam de 3 a 9.");
 					Spacing();
 					
 					TextColored(corDestaque, "[Adicionar]");
-					Text("Cria uma peça no centro da tela com as configuraçãoes\n"
+					TextWrapped("Cria uma peça no centro da tela com as configuraçãoes "
 						"selecionadas anteriormente.");
 					Spacing();
 					
 					TextColored(corDestaque, "[Remover]");
-					Text("Remove a(s) peça(s) selecionada da tela.");
+					TextWrapped("Remove a(s) peça(s) selecionada da tela.");
 					Spacing();
 					
 					TextColored(corDestaque, "[Limpar]");
-					Text("Remove todas as peças da tela.");
+					TextWrapped("Remove todas as peças da tela.");
 					TreePop();
 				}
 
 				if (TreeNode("Rejunte"))
 				{
 					TextColored(corDestaque, "[ ] Sobrepor imagem de referência");
-					Text("Coloca uma camada colorida entre o fundo e as peças,\n"
+					TextWrapped("Coloca uma camada colorida entre o fundo e as peças, "
 						"simulando um rejunte. Pode ser ligado ou desligado.");
 					Spacing();
 
 					TextColored(corDestaque, "[R][G][B] Cor");
-					Text("Seleciona a cor do rejunte que será exibida.\n"
-						"\t- R representa a quantidade de vermelho da cor. Varia de 0 a 255.\n"
-						"\t- G representa a quantidade de verde da cor. Varia de 0 a 255.\n"
-						"\t- B representa a quantidade de azul da cor. Varia de 0 a 255.\n"
-						"Clicar no quadrado de previsão de cor abrirá uma janela de seleção\n"
-						" que possibilita a escolha visual da cor com precisão.\n"
-						"OBS: É possível clicar nas caixas de R, G, e B e arrastar o mouse\n"
+					TextWrapped("Seleciona a cor do rejunte que será exibida. "
+						"\n\t- R representa a quantidade de vermelho da cor. Varia de 0 a 255. "
+						"\n\t- G representa a quantidade de verde da cor. Varia de 0 a 255. "
+						"\n\t- B representa a quantidade de azul da cor. Varia de 0 a 255. "
+						"\nClicar no quadrado de previsão de cor abrirá uma janela de seleção "
+						"que possibilita a escolha visual da cor com precisão."
+						"\nOBS: É possível clicar nas caixas de R, G, e B e arrastar o mouse "
 						"para a esquerda e direita para modificar seu valor.");
 					TreePop();
 				}
@@ -352,73 +361,73 @@ void MenuBar::AboutMenu()
 			if (TreeNode("Mouse"))
 			{
 				TextColored(corDestaque, "Botão esquerdo");
-				Text("Realiza a maioria das interações do programa:\n"
-					"\t- Clicar em cima de uma peça a tornará selecionada. A\n"
-					"\t  seleção é indicada por um contorno em volta da peça.\n"
-					"\t- Segurar a tecla SHIFT ao clicar possibilita selecionar\n"
-					"\t  mais de uma peça ao mesmo tempo.\n"
-					"\t- Quando há uma ou mais peças seleciondas, manter\n"
-					"\t  pressionado o botão esquerdo as movimentará.");
-				Text("OBS: é possível manipular os pontos de uma peça\n"
-					"selecionada para alterar seu formato com estes mesmos\n"
+				TextWrapped("Realiza a maioria das interações do programa: "
+					"\n\t- Clicar em cima de uma peça a tornará selecionada. A "
+					"seleção é indicada por um contorno em volta da peça. "
+					"\n\t- Segurar a tecla SHIFT ao clicar possibilita selecionar "
+					"mais de uma peça ao mesmo tempo. "
+					"\n\t- Quando há uma ou mais peças seleciondas, manter "
+					"pressionado o botão esquerdo as movimentará.");
+				TextWrapped("\nOBS: é possível manipular os pontos de uma peça "
+					"selecionada para alterar seu formato com estes mesmos "
 					"controles.");
 				Spacing();
 
 				TextColored(corDestaque, "Botão direito");
-				Text("Manter o botão direito pressionado movimenta a câmera,\n"
-					"possibilitando visualizar regiões da imagem que não\n"
+				TextWrapped("Manter o botão direito pressionado movimenta a câmera, "
+					"possibilitando visualizar regiões da imagem que não "
 					"estão na tela.");
 				Spacing();
 
 				TextColored(corDestaque, "Scroll");
-				Text("O scroll (ou rodinha) do mouse tem três funcionalidades:\n"
-					"\t- Pressione o scroll para redefinir o zoom e câmera para\n"
-					"\t  o padrão do programa.\n"
-					"\t- Girar a rodinha irá aproximar ou afastar a câmera,\n"
-					"\t  deixando a zona de trabalho maior ou menor.\n"
-					"\t- Posicionar o cursor do mouse em cima de uma peça e girar\n"
-					"\t  o scroll com a tecla SHIFT pressionada, aumentará ou\n"
-					"\t  diminuirá seu tamanho.");
+				TextWrapped("O scroll (ou rodinha) do mouse tem três funcionalidades: "
+					"\n\t- Pressione o scroll para redefinir o zoom e câmera para "
+					"o padrão do programa. "
+					"\n\t- Girar a rodinha irá aproximar ou afastar a câmera, "
+					"deixando a zona de trabalho maior ou menor. "
+					"\n\t- Posicionar o cursor do mouse em cima de uma peça e girar "
+					"o scroll com a tecla SHIFT pressionada, aumentará ou "
+					"diminuirá seu tamanho.");
 				TreePop();
 			}
 
 			if (TreeNode("Teclado"))
 			{
 				TextColored(corDestaque, "[CTRL]+N:"); SameLine();
-				Text("iniciar um novo projeto."); Spacing();
+				TextWrapped("iniciar um novo projeto."); Spacing();
 				
 				TextColored(corDestaque, "[CTRL]+O:"); SameLine();
-				Text("abrir um projeto do disco."); Spacing();
+				TextWrapped("abrir um projeto do disco."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+S:"); SameLine();
-				Text("salvar projeto atual no disco."); Spacing();
+				TextWrapped("salvar projeto atual no disco."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+A:"); SameLine();
-				Text("selecionar todas as peças."); Spacing();
+				TextWrapped("selecionar todas as peças."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+Z:"); SameLine();
-				Text("desfazer última ação."); Spacing();
+				TextWrapped("desfazer última ação."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+Y:"); SameLine();
-				Text("refazer última ação."); Spacing();
+				TextWrapped("refazer última ação."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+X:"); SameLine();
-				Text("recortar peças selecionadas."); Spacing();
+				TextWrapped("recortar peças selecionadas."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+C:"); SameLine();
-				Text("copiar peças selecionadas."); Spacing();
+				TextWrapped("copiar peças selecionadas."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+V:"); SameLine();
-				Text("colar peças selecionadas."); Spacing();
+				TextWrapped("colar peças selecionadas."); Spacing();
 
 				TextColored(corDestaque, "[CTRL]+D:"); SameLine();
-				Text("duplicar peças selecionadas."); Spacing();
+				TextWrapped("duplicar peças selecionadas."); Spacing();
 
 				TreePop();
 			}
 			TreePop();
 		}
-		End();
+		EndPopup();
 	}
 
 }

@@ -143,7 +143,7 @@ void Program::BeginFrame()
 
 	ResetHot();
 	
-	sgp_scale(zoom, zoom);
+	sgp_scale_at(zoom, zoom, mouse->zoomPosition.x, mouse->zoomPosition.y);
 	sgp_translate(translation.x, translation.y);
 }
 
@@ -327,6 +327,51 @@ void Program::HandleKeyUp(const sapp_event *e)
 			DestroyShape();
 		}
 		break;
+
+		case SAPP_KEYCODE_LEFT:
+		{
+			MoveShape({ -1.0f, 0.0f }, e->modifiers == SAPP_MODIFIER_SHIFT);
+		}
+		break;
+
+		case SAPP_KEYCODE_RIGHT:
+		{
+			MoveShape({ 1.0f, 0.0f }, e->modifiers == SAPP_MODIFIER_SHIFT);
+		}
+		break;
+
+		case SAPP_KEYCODE_UP:
+		{
+			MoveShape({ 0.0f, -1.0f }, e->modifiers == SAPP_MODIFIER_SHIFT);
+		}
+		break;
+
+		case SAPP_KEYCODE_DOWN:
+		{
+			MoveShape({ 0.0f, 1.0f }, e->modifiers == SAPP_MODIFIER_SHIFT);
+		}
+		break;
+	}
+}
+
+void Program::MoveShape(Vector amount, bool fast)
+{
+	if (fast) 
+	{ 
+		amount.x *= 10.0f;
+		amount.y *= 10.0f;
+	}
+	if (selectionList.empty())
+	{
+		translation.x -= amount.x;
+		translation.y -= amount.y;
+	}
+	else
+	{
+		for (auto &s : selectionList)
+		{
+			shapeList.find(s)->second.Move(amount);
+		}
 	}
 }
 

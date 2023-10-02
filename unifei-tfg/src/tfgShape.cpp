@@ -381,6 +381,15 @@ Vector Shape::Center() const
 	return Vector(cx, cy);
 }
 
+void Shape::Move(Vector amount)
+{
+	for (auto &v : vertexList)
+	{
+		v.x += amount.x;
+		v.y += amount.y;
+	}
+}
+
 void Shape::Init()
 {
 }
