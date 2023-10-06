@@ -86,7 +86,7 @@ void MenuBar::EditMenu()
 
 		Separator();
 
-		if (ColorEdit3("Alterar cor de fundo", &program.clearColor.r, ImGuiColorEditFlags_PickerHueWheel))
+		if (ColorEdit3("Alterar cor de fundo", &program.clearColor.r))
 		{
 		}
 

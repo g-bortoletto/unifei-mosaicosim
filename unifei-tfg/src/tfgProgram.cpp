@@ -143,7 +143,7 @@ void Program::BeginFrame()
 
 	ResetHot();
 	
-	sgp_scale_at(zoom, zoom, mouse->zoomPosition.x, mouse->zoomPosition.y);
+	sgp_scale(zoom, zoom);
 	sgp_translate(translation.x, translation.y);
 }
 
@@ -170,7 +170,6 @@ Program::Program()
 	mouse = new Mouse(*this);
 	debugInfo = new DebugInfo(*this);
 }
-
 Program::~Program()
 {
 	delete debugInfo;

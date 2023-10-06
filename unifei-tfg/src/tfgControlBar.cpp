@@ -58,6 +58,41 @@ void ControlBar::Frame()
 		static int vertices = 3;
 		static unsigned char step = 1;
 
+		SeparatorText("CONTROLES");
+		Spacing();
+
+		Text("Zoom");
+		SetNextItemWidth(buttonSize);
+		InputFloat("##Zoom", &program.zoom, 0.1f, 1.0f, "%.2f");
+		Spacing();
+
+		Text("Câmera");
+		float idk = GetContentRegionAvail().x;
+		if (Button(" ^ ", ImVec2(idk / 5, 0.0f)))
+		{
+			program.translation.y += 10;
+		}
+		SameLine();
+		if (Button(" < ", ImVec2(idk / 5, 0.0f)))
+		{
+			program.translation.x += 10;
+		}
+		SameLine();
+		if (Button(" > ", ImVec2(idk / 5, 0.0f)))
+		{
+			program.translation.x -= 10;
+		}
+		SameLine();
+		if (Button(" v ", ImVec2(idk / 5, 0.0f)))
+		{
+			program.translation.y -= 10;
+		}
+		
+		for (int i = 0; i < 10; ++i)
+		{
+			Spacing();
+		}
+
 		SeparatorText("IMAGEM DE REFERÊNCIA");
 		Spacing();
 
@@ -98,8 +133,7 @@ void ControlBar::Frame()
 		SetNextItemWidth(buttonSize);
 		if (ColorEdit3(
 			"## COR PEÇA",
-			&currentColor.r,
-			ImGuiColorEditFlags_PickerHueWheel))
+			&currentColor.r))
 		{
 			for (auto &s : program.selectionList)
 			{
@@ -143,7 +177,7 @@ void ControlBar::Frame()
 		Checkbox("Sobrepor imagem de referência", &program.showImageOverlap);
 		Text("Cor");
 		SetNextItemWidth(buttonSize);
-		ColorEdit3("##CORREJUNTE", &program.imageOverlapColor.r, ImGuiColorEditFlags_PickerHueWheel);
+		ColorEdit3("##CORREJUNTE", &program.imageOverlapColor.r);
 
 		End();
 	}
@@ -155,4 +189,18 @@ void ControlBar::Cleanup()
 
 void ControlBar::Input(const sapp_event *e)
 {
+}
+
+bool ControlBar::ButtonCenteredOnLine(const char *label, float alignment)
+{
+	ImGuiStyle &style = ImGui::GetStyle();
+
+	float size = ImGui::CalcTextSize(label).x + style.FramePadding.x * 2.0f;
+	float avail = ImGui::GetContentRegionAvail().x;
+
+	float off = (avail - size) * alignment;
+	if (off > 0.0f)
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+
+	return ImGui::Button(label);
 }

@@ -24,6 +24,8 @@ public:
 	virtual void Frame() override;
 	virtual void Cleanup() override;
 	virtual void Input(const sapp_event *e) override;
+
+	bool ButtonCenteredOnLine(const char *label, float alignment);
 };
 
 #endif
