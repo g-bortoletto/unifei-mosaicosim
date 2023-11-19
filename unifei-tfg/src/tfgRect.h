@@ -1,9 +1,9 @@
 #if !defined (TFG_RECT_H)
 #define TFG_RECT_H
 
+#include <sokol/sokol_gfx.h>
+#include <sokol/sokol_gp.h>
 #include "tfgTypes.h"
-
-enum sgp_blend_mode;
 
 class Rect
 {

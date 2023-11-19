@@ -3,7 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
-#include <nfd/nfd.h>
+//#include <nfd/nfd.h>
 
 #include <sokol/sokol_gp.h>
 
@@ -50,12 +50,12 @@ void BackgroundImage::Input(const sapp_event *e)
 
 void BackgroundImage::LoadBackgroundImage(void)
 { 
-	nfdchar_t *filename = 0;
+	char *filename = 0;
 	if (path.empty())
 	{
-		nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &filename);
-		if (result == NFD_ERROR || result == NFD_CANCEL) return;
-		path = std::string(filename);
+		//nfdresult_t result = NFD_OpenDialog("png;jpg;jpeg", 0, &filename);
+		//if (result == NFD_ERROR || result == NFD_CANCEL) return;
+		//path = std::string(filename);
 	}
 
 	if (path.empty())

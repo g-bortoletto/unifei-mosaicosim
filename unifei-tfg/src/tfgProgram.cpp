@@ -13,7 +13,7 @@
 #include <imgui/imgui.h>
 
 #define SOKOL_IMPL
-#define SOKOL_GLCORE33
+#define SOKOL_GLES2
 #include <sokol/sokol_app.h>
 #include <sokol/sokol_time.h>
 #include <sokol/sokol_gfx.h>
@@ -561,7 +561,9 @@ void Program::Undo(void)
 		return;
 	}
 	redoBuffer.push_back(std::map<u64, Shape>(shapeList));
-	shapeList = undoBuffer.back();
+	//shapeList = undoBuffer.back();
+	shapeList.clear();
+	//shapeList.emplace(undoBuffer.back());
 	undoBuffer.pop_back();
 	selectionList.clear();
 }
@@ -573,7 +575,9 @@ void Program::Redo(void)
 		return;
 	}
 	undoBuffer.push_back(std::map<u64, Shape>(shapeList));
-	shapeList = redoBuffer.back();
+	//shapeList = redoBuffer.back();
+	shapeList.clear();
+	//shapeList.emplace(redoBuffer.back());
 	redoBuffer.pop_back();
 	selectionList.clear();
 }
@@ -599,7 +603,7 @@ void Program::Save(void)
 	nfdchar_t *pp = 0;
 	if (projectPath.empty())
 	{
-		nfdresult_t result = NFD_SaveDialog("tfg", 0, &pp);
+		nfdresult_t result = {};// NFD_SaveDialog("tfg", 0, &pp);
 		if (result == NFD_CANCEL) { return; }
 		if (result == NFD_OKAY)
 		{
@@ -661,7 +665,7 @@ void Program::Save(void)
 void Program::Load(void)
 {
 	nfdchar_t *pp = 0;
-	nfdresult_t result = NFD_OpenDialog("tfg", 0, &pp);
+	nfdresult_t result = {};/*NFD_OpenDialog("tfg", 0, &pp);*/
 	if (result == NFD_CANCEL) { return; }
 	if (result == NFD_OKAY)
 	{
