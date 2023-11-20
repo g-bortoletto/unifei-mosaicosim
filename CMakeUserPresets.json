@@ -9,9 +9,9 @@
         {
             "name": "default",
             "displayName": "Emscripten",
-            "binaryDir": "build",
-            "generator": "Ninja Multi-Config",
-            "toolchainFile": "emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+            "binaryDir": "bin",
+            "generator": "Ninja",
+            "toolchainFile": "C:/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
         }
     ],
     "buildPresets": [
