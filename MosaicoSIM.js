@@ -6819,8 +6819,8 @@ var stackRestore = createExportWrapper('stackRestore');
 var stackAlloc = createExportWrapper('stackAlloc');
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
 var dynCall_jiji = Module['dynCall_jiji'] = createExportWrapper('dynCall_jiji');
-var ___start_em_js = Module['___start_em_js'] = 855812;
-var ___stop_em_js = Module['___stop_em_js'] = 862130;
+var ___start_em_js = Module['___start_em_js'] = 873252;
+var ___stop_em_js = Module['___stop_em_js'] = 879570;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
