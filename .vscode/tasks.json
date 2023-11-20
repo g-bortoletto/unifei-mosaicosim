@@ -4,7 +4,7 @@
         {
             "label": "StartServer",
             "type": "process",
-            "command": "${input:startServer}"
+            "command": "${input:startServer}",
         }
     ],
     "inputs": [

@@ -5,31 +5,16 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "../inc/imgui/imgui.h"
 
-#include "../inc/sokol/sokol_app.h"
-#include "../inc/sokol/sokol_log.h"
-#include "../inc/sokol/sokol_gfx.h"
-#include "../inc/sokol/sokol_gp.h"
-#include "../inc/sokol/sokol_glue.h"
-
 #include "tfg_types.h"
 
 #include "tfg_interface.cpp"
 
 namespace mosaico_sim
 {
-	struct _state
+	mosaico_sim_state state = 
 	{
-		rectwhf main_window;
-		float frame_time;
-		float dpi_scale;
-
-		struct
-		{
-			sg_pass_action pass_action;
-		}
-		display;
-	}
-	state;
+		.font_size = 16,
+	};
 
 	void init(void);
 	void frame(void);
