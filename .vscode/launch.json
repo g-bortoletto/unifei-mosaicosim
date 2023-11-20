@@ -5,7 +5,7 @@
             "name": "Launch",
             "type": "msedge",
             "request": "launch",
-            "url": "http://localhost:3000/build/Debug/${command:cmake.launchTargetFilename}",
+            "url": "http://localhost:3000/bin/MosaicoSIM.html",
             "preLaunchTask": "StartServer",
         }
     ]
