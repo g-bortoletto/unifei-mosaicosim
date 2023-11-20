@@ -1,33 +1,36 @@
 #include "tfg_mosaicosim.cpp"
 
-static void Init(void)
+static void init(void)
 {
-	MosaicoSim::Init();
+	mosaico_sim::init();
 }
 
-static void Frame(void)
+static void frame(void)
 {
-	MosaicoSim::Frame();
+	mosaico_sim::frame();
 }
 
-static void Input(const sapp_event *e)
+static void input(const sapp_event *e)
 {
-	MosaicoSim::Input(e);
+	mosaico_sim::input(e);
 }
 
-static void Cleanup(void)
+static void cleanup(void)
 {
-	MosaicoSim::Cleanup();
+	mosaico_sim::cleanup();
 }
 
 sapp_desc sokol_main(int argc, char* argv[]) {
     (void)argc; (void)argv;
     return (sapp_desc){
-        .init_cb = Init,
-        .frame_cb = Frame,
-        .cleanup_cb = Cleanup,
-		.event_cb = Input,
+        .init_cb = init,
+        .frame_cb = frame,
+        .cleanup_cb = cleanup,
+		.event_cb = input,
+		.high_dpi = true,
+		.fullscreen = true,
         .window_title = "MosaicoSIM",
+		.enable_clipboard = true,
         .logger.func = slog_func,
     };
 }
