@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #pragma clang diagnostic ignored "-Waddress-of-temporary"
 #pragma clang diagnostic ignored "-Wc99-designator"
 #pragma clang diagnostic ignored "-Wreorder-init-list"
@@ -10,9 +8,7 @@
 #include "../inc/sokol/util/sokol_imgui.h"
 
 #include "../res/fonts/segoeui.h"
-#include "../res/fonts/fontawesome.h"
 #include "../res/fonts/fontawesome85.h"
-#include "../res/fonts/fontawesomenc.h"
 #include "../inc/icons/icons_font_awesome.h"
 
 using namespace ImGui;
@@ -491,7 +487,7 @@ namespace mosaico_sim
 			| ImGuiWindowFlags_NoTitleBar;
 		SetNextWindowPos(ImVec2(state.interface.control_bar.rect.x, state.interface.control_bar.rect.y));
 		SetNextWindowSizeConstraints(
-			ImVec2(250.0f, state.interface.control_bar.rect.h), 
+			ImVec2(250.0f, state.interface.control_bar.rect.h),
 			ImVec2(sapp_widthf() * 0.5f, state.interface.control_bar.rect.h));
 		if (Begin("Barra de Controle", &state.interface.control_bar.show, state.interface.control_bar.flags))
 		{
@@ -525,7 +521,7 @@ namespace mosaico_sim
 			Spacing();
 
 			BeginDisabled(false);
-			if (Button("Adicionar##ref", ImVec2(button_size, 0.0f))) 
+			if (Button("Adicionar##ref", ImVec2(button_size, 0.0f)))
 			{
 			}
 			EndDisabled();
@@ -537,7 +533,7 @@ namespace mosaico_sim
 			EndDisabled();
 
 			static bool hide;
-			if (Checkbox("Ocultar", &hide)) 
+			if (Checkbox("Ocultar", &hide))
 			{}
 
 			for (int i = 0; i < 10; ++i)
@@ -566,8 +562,8 @@ namespace mosaico_sim
 				if (vertices > 9) vertices = 9;
 			}
 
-			if (Button("Adicionar##peça", ImVec2(button_size, 0.0f))) 
-			{ 
+			if (Button("Adicionar##peça", ImVec2(button_size, 0.0f)))
+			{
 			}
 
 			BeginDisabled(false);
