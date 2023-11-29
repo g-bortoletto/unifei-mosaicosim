@@ -11,6 +11,8 @@
 #include "../res/fonts/fontawesome85.h"
 #include "../inc/icons/icons_font_awesome.h"
 
+#include "../inc/sokol/sokol_gp.h"
+
 using namespace ImGui;
 
 namespace mosaico_sim
@@ -23,6 +25,10 @@ namespace mosaico_sim
 	void interface_cleanup(void);
 
 	inline void interface_render(void);
+	static void fonts_load(void);
+	static void menu_frame(void);
+	static void sidebar_frame(void);
+	static void workspace_frame(void);
 
 	void interface_init(void)
 	{
@@ -34,6 +40,94 @@ namespace mosaico_sim
 
 		StyleColorsLight(&GetStyle());
 
+		fonts_load();
+
+		state.interface.side_bar.rect =
+		{
+			.x = 0.0f,
+			.y = 0.0f,
+			.w = 300.0f,
+			.h = sapp_heightf(),
+		};
+		state.interface.side_bar.button_padding = 5.0f;
+
+		sgp_setup(&(sgp_desc) {});
+
+		sg_image_desc fb_image_desc;
+		memset(&fb_image_desc, 0, sizeof(sg_image_desc));
+		fb_image_desc.render_target = true;
+		fb_image_desc.width = state.main_window.w;
+		fb_image_desc.height = state.main_window.h;
+		state.workspace.image_color = sg_make_image(&fb_image_desc);
+
+		sg_image_desc fb_depth_image_desc;
+		memset(&fb_depth_image_desc, 0, sizeof(sg_image_desc));
+		fb_depth_image_desc.render_target = true;
+		fb_depth_image_desc.width = state.main_window.w;
+		fb_depth_image_desc.height = state.main_window.h;
+		fb_depth_image_desc.pixel_format = (sg_pixel_format)sapp_depth_format();
+		state.workspace.image_depth = sg_make_image(&fb_depth_image_desc);
+
+		sg_sampler_desc linear_sampler_desc =
+		{
+			.min_filter = SG_FILTER_LINEAR,
+			.mag_filter = SG_FILTER_LINEAR,
+			.wrap_u = SG_WRAP_CLAMP_TO_EDGE,
+			.wrap_v = SG_WRAP_CLAMP_TO_EDGE,
+		};
+		state.workspace.sampler = sg_make_sampler(&linear_sampler_desc);
+
+		sg_pass_desc pass_desc;
+		memset(&pass_desc, 0, sizeof(sg_pass_desc));
+		pass_desc.color_attachments[0].image = state.workspace.image_color;
+		pass_desc.depth_stencil_attachment.image = state.workspace.image_depth;
+		state.workspace.pass = sg_make_pass(&pass_desc);
+
+		state.workspace.texture = simgui_make_image(&(simgui_image_desc_t)
+		{
+			.image = state.workspace.image_color,
+			.sampler = state.workspace.sampler,
+		});
+	}
+
+	void interface_frame()
+	{
+		simgui_new_frame(&(simgui_frame_desc_t)
+		{
+			.width = sapp_width(),
+			.height = sapp_height(),
+			.delta_time = sapp_frame_duration(),
+			.dpi_scale = sapp_dpi_scale(),
+		});
+
+		menu_frame();
+		sidebar_frame();
+		workspace_frame();
+		// if (Begin("idk"))
+		// {
+		// 	Text("%s ", ICON_FA_GLASS); SameLine();
+		// 	End();
+		// }
+	}
+
+	void interface_input(const sapp_event *e)
+	{
+		simgui_handle_event(e);
+	}
+
+	void interface_cleanup(void)
+	{
+		sgp_shutdown();
+		simgui_shutdown();
+	}
+
+	inline void interface_render(void)
+	{
+		simgui_render();
+	}
+
+	static void fonts_load(void)
+	{
 		auto& io = GetIO();
 		ImFontConfig font_main_cfg;
 		font_main_cfg.FontDataOwnedByAtlas = false;
@@ -94,32 +188,15 @@ namespace mosaico_sim
 		font_icon_desc.image = font_icon_img;
 		font_icon_desc.sampler = font_icon_smp;
 		io.Fonts->TexID = simgui_imtextureid(simgui_make_image(&font_icon_desc));
-
-		state.interface.control_bar.rect =
-		{
-			.x = 0.0f,
-			.y = 0.0f,
-			.w = 300.0f,
-			.h = sapp_heightf(),
-		};
-		state.interface.control_bar.button_padding = 5.0f;
 	}
 
-	void interface_frame()
+	static void menu_frame(void)
 	{
-		simgui_new_frame(&(simgui_frame_desc_t)
-		{
-			.width = sapp_width(),
-			.height = sapp_height(),
-			.delta_time = sapp_frame_duration(),
-			.dpi_scale = sapp_dpi_scale(),
-		});
-
 		if (BeginMainMenuBar())
 		{
 			state.interface.menu_bar.h = GetWindowHeight();
-			state.interface.control_bar.rect.y = state.interface.menu_bar.h;
-			state.interface.control_bar.rect.h = sapp_heightf() - state.interface.control_bar.rect.y;
+			state.interface.side_bar.rect.y = state.interface.menu_bar.h;
+			state.interface.side_bar.rect.h = sapp_heightf() - state.interface.side_bar.rect.y;
 
 			if (BeginMenu("Arquivo"))
 			{
@@ -480,25 +557,28 @@ namespace mosaico_sim
 
 			EndMainMenuBar();
 		}
+	}
 
-		state.interface.control_bar.flags = ImGuiWindowFlags_NoMove
+	static void sidebar_frame(void)
+	{
+		state.interface.side_bar.flags = ImGuiWindowFlags_NoMove
 			| ImGuiWindowFlags_NoCollapse
 			//| ImGuiWindowFlags_NoBackground
 			| ImGuiWindowFlags_NoTitleBar;
-		SetNextWindowPos(ImVec2(state.interface.control_bar.rect.x, state.interface.control_bar.rect.y));
+		SetNextWindowPos(ImVec2(state.interface.side_bar.rect.x, state.interface.side_bar.rect.y));
 		SetNextWindowSizeConstraints(
-			ImVec2(250.0f, state.interface.control_bar.rect.h),
-			ImVec2(sapp_widthf() * 0.5f, state.interface.control_bar.rect.h));
-		if (Begin("Barra de Controle", &state.interface.control_bar.show, state.interface.control_bar.flags))
+			ImVec2(250.0f, state.interface.side_bar.rect.h),
+			ImVec2(sapp_widthf() * 0.5f, state.interface.side_bar.rect.h));
+		if (Begin("Barra de Controle", &state.interface.side_bar.show, state.interface.side_bar.flags))
 		{
-			state.interface.control_bar.rect.w = GetWindowWidth();
+			state.interface.side_bar.rect.w = GetWindowWidth();
 			float button_size = state
 				.interface
-				.control_bar
+				.side_bar
 				.rect
 				.w
 				- 3.0f
-				* state.interface.control_bar.button_padding;
+				* state.interface.side_bar.button_padding;
 
 			static int vertices = 3;
 			static unsigned char step = 1;
@@ -589,61 +669,51 @@ namespace mosaico_sim
 			ColorEdit3("##CORREJUNTE", &overlap_color.r);
 			End();
 		}
-		if (Begin("idk"))
+	}
+
+	static void workspace_frame(void)
+	{
+		ImGuiWindowFlags workspace_flags = ImGuiWindowFlags_None;
+			// | ImGuiWindowFlags_NoBackground
+			// | ImGuiWindowFlags_NoResize
+			// | ImGuiWindowFlags_NoCollapse
+			// | ImGuiWindowFlags_NoMove;
+			// | ImGuiWindowFlags_NoInputs;
+		ImGuiCond posCond = ImGuiCond_Once;
+		ImGuiCond sizeCond = ImGuiCond_Once;
+		SetNextWindowBgAlpha(1.0f);
+		SetNextWindowPos(ImVec2(state.interface.side_bar.rect.w, state.interface.menu_bar.h), posCond);
+		SetNextWindowSize(ImVec2(
+			state.main_window.w - state.interface.side_bar.rect.w,
+			state.main_window.h - state.interface.menu_bar.h),
+			sizeCond);
+		if (Begin("workspace", NULL, workspace_flags))
 		{
-			Text("%s ", ICON_FA_GLASS); SameLine();
-			Text("%s ", ICON_FA_MUSIC); SameLine();
-			Text("%s ", ICON_FA_SEARCH); SameLine();
-			Text("%s ", ICON_FA_ENVELOPE_O); SameLine();
-			Text("%s ", ICON_FA_HEART); SameLine();
-			Text("%s ", ICON_FA_STAR); SameLine();
-			Text("%s ", ICON_FA_STAR_O); SameLine();
-			Text("%s ", ICON_FA_USER); SameLine();
-			Text("%s ", ICON_FA_FILM); SameLine();
-			Text("%s ", ICON_FA_TH_LARGE); SameLine();
-			Text("%s ", ICON_FA_TH); SameLine();
-			Text("%s ", ICON_FA_TH_LIST); SameLine();
-			Text("%s ", ICON_FA_CHECK); SameLine();
-			Text("%s ", ICON_FA_TIMES); SameLine();
-			Text("%s ", ICON_FA_SEARCH_PLUS); SameLine();
-			Text("%s ", ICON_FA_SEARCH_MINUS); SameLine();
-			Text("%s ", ICON_FA_POWER_OFF); SameLine();
-			Text("%s ", ICON_FA_SIGNAL); SameLine();
-			Text("%s ", ICON_FA_COG); SameLine();
-			Text("%s ", ICON_FA_TRASH_O); SameLine();
-			Text("%s ", ICON_FA_HOME); SameLine();
-			Text("%s ", ICON_FA_FILE_O); SameLine();
-			Text("%s ", ICON_FA_CLOCK_O); SameLine();
-			Text("%s ", ICON_FA_ROAD); SameLine();
-			Text("%s ", ICON_FA_DOWNLOAD); SameLine();
-			Text("%s ", ICON_FA_ARROW_CIRCLE_O_DOWN); SameLine();
-			Text("%s ", ICON_FA_ARROW_CIRCLE_O_UP); SameLine();
-			Text("%s ", ICON_FA_INBOX); SameLine();
-			Text("%s ", ICON_FA_PLAY_CIRCLE_O); SameLine();
-			Text("%s ", ICON_FA_REPEAT); SameLine();
-			Text("%s ", ICON_FA_REFRESH); SameLine();
-			Text("%s ", ICON_FA_LIST_ALT); SameLine();
-			Text("%s ", ICON_FA_LOCK); SameLine();
-			Text("%s ", ICON_FA_FLAG); SameLine();
-			Text("%s ", ICON_FA_HEADPHONES); SameLine();
-			Text("%s ", ICON_FA_VOLUME_OFF); SameLine();
-			Text("%s ", ICON_FA_VOLUME_DOWN); SameLine();
+			ImTextureID texture_id = simgui_imtextureid(state.workspace.texture);
+			Image(texture_id, GetWindowSize());
 			End();
 		}
-	}
 
-	void interface_input(const sapp_event *e)
-	{
+		sgp_begin(state.main_window.w, state.main_window.h);
+		sgp_project(0, state.main_window.w, state.main_window.h, 0);
 
-	}
+		sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
+		sgp_clear();
+		sgp_reset_color();
 
-	void interface_cleanup(void)
-	{
+		sgp_set_color(0.0f, 1.0f, 1.0f, 1.0f);
+		sgp_draw_filled_triangle(100.0f, 100.0f, 200.0f, 100.0f, 150.0f, 200.0f);
 
-	}
-
-	inline void  interface_render(void)
-	{
-		simgui_render();
+		sg_pass_action pass_action;
+		memset(&pass_action, 0, sizeof(sg_pass_action));
+		pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+		pass_action.colors[0].clear_value.r = 1.0f;
+		pass_action.colors[0].clear_value.g = 1.0f;
+		pass_action.colors[0].clear_value.b = 1.0f;
+		pass_action.colors[0].clear_value.a = 0.2f;
+		sg_begin_pass(state.workspace.pass, &pass_action);
+		sgp_flush();
+		sgp_end();
+		sg_end_pass();
 	}
 }

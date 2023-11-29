@@ -5,6 +5,7 @@
 #include "../inc/sokol/sokol_gfx.h"
 #include "../inc/sokol/sokol_gp.h"
 #include "../inc/sokol/sokol_glue.h"
+#include "../inc/sokol/util/sokol_imgui.h"
 
 struct ImFont;
 
@@ -77,14 +78,24 @@ namespace mosaico_sim
 
 		struct
 		{
+			simgui_image_t texture;
+			sg_image image_color;
+			sg_image image_depth;
+			sg_pass pass;
+			sg_sampler sampler;
+		}
+		workspace;
+
+		struct
+		{
 			struct
 			{
 				bool show = true;
 				int flags;
 				rectf rect;
 				float button_padding;
-			} 
-			control_bar;
+			}
+			side_bar;
 
 			struct
 			{

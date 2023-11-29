@@ -3,7 +3,6 @@
 #pragma clang diagnostic ignored "-Wreorder-init-list"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "../inc/imgui/imgui.h"
 
 #include "tfg_types.h"
 
@@ -11,7 +10,7 @@
 
 namespace mosaico_sim
 {
-	mosaico_sim_state state = 
+	mosaico_sim_state state =
 	{
 		.font_size = 16,
 	};
@@ -29,13 +28,15 @@ namespace mosaico_sim
 			.logger.func = slog_func,
 		});
 
-		interface_init();
-
-		state.display.pass_action.colors[0] = 
+		state.main_window.w = 1280;
+		state.main_window.h = 720;
+		state.display.pass_action.colors[0] =
 		{
 			.load_action = SG_LOADACTION_CLEAR,
 			.clear_value = { 0.33f, 0.33f, 0.33f, 1.0f },
 		};
+
+		interface_init();
 	}
 
 	void frame(void)
@@ -44,6 +45,8 @@ namespace mosaico_sim
 		state.main_window.h = sapp_height();
 		state.frame_time = sapp_frame_duration();
 		state.dpi_scale = sapp_dpi_scale();
+
+		sgp_begin(state.main_window.w, state.main_window.h);
 
 		interface_frame();
 
@@ -57,18 +60,20 @@ namespace mosaico_sim
 		// sg_draw here
 
 		interface_render();
+		sgp_flush();
+		sgp_end();
 		sg_end_pass();
 		sg_commit();
 	}
 
 	void input(const sapp_event *e)
 	{
-		simgui_handle_event(e);
+		interface_input(e);
 	}
 
 	void cleanup(void)
 	{
-		simgui_shutdown();
+		interface_cleanup();
 		sg_shutdown();
 	}
 }
