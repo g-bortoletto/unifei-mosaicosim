@@ -5304,6 +5304,8 @@ function simgui_js_is_osx() { if (navigator.userAgent.includes('Macintosh')) { r
       GLctx.bufferSubData(target, offset, HEAPU8.subarray(data, data+size));
     };
 
+  function _glCheckFramebufferStatus(x0) { return GLctx.checkFramebufferStatus(x0) }
+
   function _glClearBufferfi(x0, x1, x2, x3) { GLctx.clearBufferfi(x0, x1, x2, x3) }
 
   var _glClearBufferfv = (buffer, drawbuffer, value) => {
@@ -5489,6 +5491,18 @@ function simgui_js_is_osx() { if (navigator.userAgent.includes('Macintosh')) { r
       GLctx.drawArraysInstanced(mode, first, count, primcount);
     };
 
+  var tempFixedLengthArray = [];
+  
+  var _glDrawBuffers = (n, bufs) => {
+  
+      var bufArray = tempFixedLengthArray[n];
+      for (var i = 0; i < n; i++) {
+        bufArray[i] = HEAP32[(((bufs)+(i*4))>>2)];
+      }
+  
+      GLctx.drawBuffers(bufArray);
+    };
+
   var _glDrawElements = (mode, count, type, indices) => {
   
       GLctx.drawElements(mode, count, type, indices);
@@ -5503,6 +5517,20 @@ function simgui_js_is_osx() { if (navigator.userAgent.includes('Macintosh')) { r
 
   var _glEnableVertexAttribArray = (index) => {
       GLctx.enableVertexAttribArray(index);
+    };
+
+  var _glFramebufferRenderbuffer = (target, attachment, renderbuffertarget, renderbuffer) => {
+      GLctx.framebufferRenderbuffer(target, attachment, renderbuffertarget,
+                                         GL.renderbuffers[renderbuffer]);
+    };
+
+  var _glFramebufferTexture2D = (target, attachment, textarget, texture, level) => {
+      GLctx.framebufferTexture2D(target, attachment, textarget,
+                                      GL.textures[texture], level);
+    };
+
+  var _glFramebufferTextureLayer = (target, attachment, texture, level, layer) => {
+      GLctx.framebufferTextureLayer(target, attachment, GL.textures[texture], level, layer);
     };
 
   function _glFrontFace(x0) { GLctx.frontFace(x0) }
@@ -5524,6 +5552,12 @@ function simgui_js_is_osx() { if (navigator.userAgent.includes('Macintosh')) { r
   
   var _glGenBuffers = (n, buffers) => {
       __glGenObject(n, buffers, 'createBuffer', GL.buffers
+        );
+    };
+
+  
+  var _glGenFramebuffers = (n, ids) => {
+      __glGenObject(n, ids, 'createFramebuffer', GL.framebuffers
         );
     };
 
@@ -5940,7 +5974,6 @@ function simgui_js_is_osx() { if (navigator.userAgent.includes('Macintosh')) { r
       return -1;
     };
 
-  var tempFixedLengthArray = [];
   var _glInvalidateFramebuffer = (target, numAttachments, attachments) => {
       var list = tempFixedLengthArray[numAttachments];
       for (var i = 0; i < numAttachments; i++) {
@@ -6613,6 +6646,8 @@ var wasmImports = {
   /** @export */
   glBufferSubData: _glBufferSubData,
   /** @export */
+  glCheckFramebufferStatus: _glCheckFramebufferStatus,
+  /** @export */
   glClearBufferfi: _glClearBufferfi,
   /** @export */
   glClearBufferfv: _glClearBufferfv,
@@ -6661,6 +6696,8 @@ var wasmImports = {
   /** @export */
   glDrawArraysInstanced: _glDrawArraysInstanced,
   /** @export */
+  glDrawBuffers: _glDrawBuffers,
+  /** @export */
   glDrawElements: _glDrawElements,
   /** @export */
   glDrawElementsInstanced: _glDrawElementsInstanced,
@@ -6669,9 +6706,17 @@ var wasmImports = {
   /** @export */
   glEnableVertexAttribArray: _glEnableVertexAttribArray,
   /** @export */
+  glFramebufferRenderbuffer: _glFramebufferRenderbuffer,
+  /** @export */
+  glFramebufferTexture2D: _glFramebufferTexture2D,
+  /** @export */
+  glFramebufferTextureLayer: _glFramebufferTextureLayer,
+  /** @export */
   glFrontFace: _glFrontFace,
   /** @export */
   glGenBuffers: _glGenBuffers,
+  /** @export */
+  glGenFramebuffers: _glGenFramebuffers,
   /** @export */
   glGenRenderbuffers: _glGenRenderbuffers,
   /** @export */
@@ -6819,8 +6864,8 @@ var stackRestore = createExportWrapper('stackRestore');
 var stackAlloc = createExportWrapper('stackAlloc');
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
 var dynCall_jiji = Module['dynCall_jiji'] = createExportWrapper('dynCall_jiji');
-var ___start_em_js = Module['___start_em_js'] = 1029588;
-var ___stop_em_js = Module['___stop_em_js'] = 1035906;
+var ___start_em_js = Module['___start_em_js'] = 1036292;
+var ___stop_em_js = Module['___stop_em_js'] = 1042610;
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
