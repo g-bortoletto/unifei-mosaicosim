@@ -1,3 +1,4 @@
+#include "emscripten/em_asm.h"
 #pragma clang diagnostic ignored "-Waddress-of-temporary"
 #pragma clang diagnostic ignored "-Wc99-designator"
 #pragma clang diagnostic ignored "-Wreorder-init-list"
@@ -12,6 +13,14 @@
 #include "../inc/icons/icons_font_awesome.h"
 
 #include "../inc/sokol/sokol_gp.h"
+
+#include <emscripten.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_NO_GIF
+#define STBI_NO_HDR
+#define STBI_WINDOWS_UTF8
+#include "../inc/stblib/stb_image.h"
 
 using namespace ImGui;
 
@@ -603,6 +612,19 @@ namespace mosaico_sim
 			BeginDisabled(false);
 			if (Button("Adicionar##ref", ImVec2(button_size, 0.0f)))
 			{
+				void *buffer = EM_ASM_PTR(
+					let input = document.createElement('input');
+					input.type = 'file';
+					input.multiple = false;
+					input.accept = '.png,.jpg,.jpeg';
+					input.onchange = _ =>
+					{
+						let file = input.files;
+						console.log(file.arrayBuffer());
+						return file.arrayBuffer();
+					};
+					input.click();
+				);
 			}
 			EndDisabled();
 
@@ -673,14 +695,18 @@ namespace mosaico_sim
 
 	static void workspace_frame(void)
 	{
-		ImGuiWindowFlags workspace_flags = ImGuiWindowFlags_None;
+		ImVec2 content_area_min;
+		ImVec2 content_area_max;
+		ImVec2 content_area;
+		ImGuiWindowFlags workspace_flags = ImGuiWindowFlags_None
+			| ImGuiWindowFlags_NoCollapse
 			// | ImGuiWindowFlags_NoBackground
-			// | ImGuiWindowFlags_NoResize
-			// | ImGuiWindowFlags_NoCollapse
-			// | ImGuiWindowFlags_NoMove;
-			// | ImGuiWindowFlags_NoInputs;
-		ImGuiCond posCond = ImGuiCond_Once;
-		ImGuiCond sizeCond = ImGuiCond_Once;
+			| ImGuiWindowFlags_NoTitleBar
+			| ImGuiWindowFlags_NoResize
+			| ImGuiWindowFlags_NoMove
+			| ImGuiWindowFlags_NoBringToFrontOnFocus;
+		ImGuiCond posCond = ImGuiCond_Always;
+		ImGuiCond sizeCond = ImGuiCond_Always;
 		SetNextWindowBgAlpha(1.0f);
 		SetNextWindowPos(ImVec2(state.interface.side_bar.rect.w, state.interface.menu_bar.h), posCond);
 		SetNextWindowSize(ImVec2(
@@ -690,30 +716,45 @@ namespace mosaico_sim
 		if (Begin("workspace", NULL, workspace_flags))
 		{
 			ImTextureID texture_id = simgui_imtextureid(state.workspace.texture);
-			Image(texture_id, GetWindowSize());
+			content_area_max = GetWindowContentRegionMax();
+			content_area_min = GetWindowContentRegionMin();
+			content_area = ImVec2(content_area_max.x - content_area_min.x, content_area_max.y - content_area_min.y);
+			Image(
+				texture_id,
+				ImVec2(content_area_max.x - content_area_min.x, content_area_max.y - content_area_min.y));
 			End();
 		}
 
-		sgp_begin(state.main_window.w, state.main_window.h);
-		sgp_project(0, state.main_window.w, state.main_window.h, 0);
+		sgp_begin(content_area.x, content_area.y);
+		sgp_viewport(0, 0, content_area.x, content_area.y);
+		// sgp_project(0, content_area.x, content_area.y, 0);
 
-		sgp_set_color(1.0f, 1.0f, 1.0f, 1.0f);
+		ImColor bg = GetStyle().Colors[ImGuiCol_WindowBg];
+
+		sgp_set_color(
+			bg.Value.x,
+			bg.Value.y,
+			bg.Value.z,
+			bg.Value.w);
 		sgp_clear();
 		sgp_reset_color();
 
+		// draw_pieces
 		sgp_set_color(0.0f, 1.0f, 1.0f, 1.0f);
-		sgp_draw_filled_triangle(100.0f, 100.0f, 200.0f, 100.0f, 150.0f, 200.0f);
+		sgp_draw_filled_rect(0, 0, content_area.x, content_area.y);
 
 		sg_pass_action pass_action;
 		memset(&pass_action, 0, sizeof(sg_pass_action));
 		pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-		pass_action.colors[0].clear_value.r = 1.0f;
-		pass_action.colors[0].clear_value.g = 1.0f;
-		pass_action.colors[0].clear_value.b = 1.0f;
-		pass_action.colors[0].clear_value.a = 0.2f;
 		sg_begin_pass(state.workspace.pass, &pass_action);
 		sgp_flush();
 		sgp_end();
 		sg_end_pass();
+
+		Begin("DEBUG");
+		Text("CONTENT AREA MIN: (%.1f, %.1f)", content_area_min.x, content_area_min.y);
+		Text("CONTENT AREA MAX: (%.1f, %.1f)", content_area_max.x, content_area_max.y);
+		Text("CONTENT AREA: (%.1f, %.1f)", content_area_max.x - content_area_min.x, content_area_max.y - content_area_min.y);
+		End();
 	}
 }

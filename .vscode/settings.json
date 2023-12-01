@@ -1,3 +1,6 @@
 {
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "C_Cpp.default.includePath": [
+        "C:\\Users\\void\\scoop\\persist\\emscripten\\upstream\\emscripten\\cache\\sysroot\\include"
+    ]
 }

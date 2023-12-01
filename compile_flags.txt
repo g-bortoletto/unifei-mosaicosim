@@ -1,0 +1,1 @@
+-IC:/Users/void/scoop/persist/emscripten/upstream/emscripten/cache/sysroot/include
