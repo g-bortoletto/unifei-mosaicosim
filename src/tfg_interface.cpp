@@ -738,6 +738,7 @@ namespace mosaico_sim
 		sgp_end();
 		sg_end_pass();
 
+		SetNextWindowPos(ImVec2(300.0f, 100.0f), ImGuiCond_Once);
 		Begin("DEBUG");
 		Text("CONTENT AREA MIN: (%.1f, %.1f)", content_area_min.x, content_area_min.y);
 		Text("CONTENT AREA MAX: (%.1f, %.1f)", content_area_max.x, content_area_max.y);
