@@ -1,11 +1,8 @@
-#include "emscripten/em_asm.h"
-#pragma clang diagnostic ignored "-Waddress-of-temporary"
-#pragma clang diagnostic ignored "-Wc99-designator"
-#pragma clang diagnostic ignored "-Wreorder-init-list"
-
 #include "../inc/imgui/imgui.h"
 
 #include "tfg_types.h"
+#include "tfg_image.cpp"
+
 #include "../inc/sokol/util/sokol_imgui.h"
 
 #include "../res/fonts/segoeui.h"
@@ -14,19 +11,15 @@
 
 #include "../inc/sokol/sokol_gp.h"
 
-#include <emscripten.h>
-
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_NO_GIF
-#define STBI_NO_HDR
-#define STBI_WINDOWS_UTF8
-#include "../inc/stblib/stb_image.h"
-
 using namespace ImGui;
 
 namespace mosaico_sim
 {
-	extern mosaico_sim_state state;
+	extern mosaico_sim_state ms;
+
+	static mosaico_sim_interface *gui       = &ms.gui;
+	static mosaico_sim_image *image         = &ms.image;
+	static mosaico_sim_workspace *workspace = &ms.workspace;
 
 	void interface_init(void);
 	void interface_frame(void);
@@ -51,31 +44,31 @@ namespace mosaico_sim
 
 		fonts_load();
 
-		state.interface.side_bar.rect =
+		gui->side_bar.rect =
 		{
 			.x = 0.0f,
 			.y = 0.0f,
 			.w = 300.0f,
 			.h = sapp_heightf(),
 		};
-		state.interface.side_bar.button_padding = 5.0f;
+		gui->side_bar.button_padding = 5.0f;
 
 		sgp_setup(&(sgp_desc) {});
 
 		sg_image_desc fb_image_desc;
 		memset(&fb_image_desc, 0, sizeof(sg_image_desc));
 		fb_image_desc.render_target = true;
-		fb_image_desc.width = state.main_window.w;
-		fb_image_desc.height = state.main_window.h;
-		state.workspace.image_color = sg_make_image(&fb_image_desc);
+		fb_image_desc.width = ms.main_window.w;
+		fb_image_desc.height = ms.main_window.h;
+		workspace->image_color = sg_make_image(&fb_image_desc);
 
 		sg_image_desc fb_depth_image_desc;
 		memset(&fb_depth_image_desc, 0, sizeof(sg_image_desc));
 		fb_depth_image_desc.render_target = true;
-		fb_depth_image_desc.width = state.main_window.w;
-		fb_depth_image_desc.height = state.main_window.h;
+		fb_depth_image_desc.width = ms.main_window.w;
+		fb_depth_image_desc.height = ms.main_window.h;
 		fb_depth_image_desc.pixel_format = (sg_pixel_format)sapp_depth_format();
-		state.workspace.image_depth = sg_make_image(&fb_depth_image_desc);
+		workspace->image_depth = sg_make_image(&fb_depth_image_desc);
 
 		sg_sampler_desc linear_sampler_desc =
 		{
@@ -84,19 +77,21 @@ namespace mosaico_sim
 			.wrap_u = SG_WRAP_CLAMP_TO_EDGE,
 			.wrap_v = SG_WRAP_CLAMP_TO_EDGE,
 		};
-		state.workspace.sampler = sg_make_sampler(&linear_sampler_desc);
+		workspace->sampler = sg_make_sampler(&linear_sampler_desc);
 
 		sg_pass_desc pass_desc;
 		memset(&pass_desc, 0, sizeof(sg_pass_desc));
-		pass_desc.color_attachments[0].image = state.workspace.image_color;
-		pass_desc.depth_stencil_attachment.image = state.workspace.image_depth;
-		state.workspace.pass = sg_make_pass(&pass_desc);
+		pass_desc.color_attachments[0].image = workspace->image_color;
+		pass_desc.depth_stencil_attachment.image = workspace->image_depth;
+		workspace->pass = sg_make_pass(&pass_desc);
 
-		state.workspace.texture = simgui_make_image(&(simgui_image_desc_t)
+		workspace->texture = simgui_make_image(&(simgui_image_desc_t)
 		{
-			.image = state.workspace.image_color,
-			.sampler = state.workspace.sampler,
+			.image = workspace->image_color,
+			.sampler = workspace->sampler,
 		});
+
+		image_init();
 	}
 
 	void interface_frame()
@@ -122,10 +117,12 @@ namespace mosaico_sim
 	void interface_input(const sapp_event *e)
 	{
 		simgui_handle_event(e);
+		image_input(e);
 	}
 
 	void interface_cleanup(void)
 	{
+		image_cleanup();
 		sgp_shutdown();
 		simgui_shutdown();
 	}
@@ -143,10 +140,10 @@ namespace mosaico_sim
 		font_main_cfg.OversampleH = 2;
 		font_main_cfg.OversampleV = 2;
 		font_main_cfg.RasterizerMultiply = 1.0f;
-		state.font_main = io.Fonts->AddFontFromMemoryCompressedTTF(
+		ms.font_main = io.Fonts->AddFontFromMemoryCompressedTTF(
 			segoeui_compressed_data,
 			segoeui_compressed_size,
-			state.font_size,
+			ms.font_size,
 			&font_main_cfg);
 
 		unsigned char* font_main_pixels;
@@ -203,9 +200,9 @@ namespace mosaico_sim
 	{
 		if (BeginMainMenuBar())
 		{
-			state.interface.menu_bar.h = GetWindowHeight();
-			state.interface.side_bar.rect.y = state.interface.menu_bar.h;
-			state.interface.side_bar.rect.h = sapp_heightf() - state.interface.side_bar.rect.y;
+			gui->menu_bar.h = GetWindowHeight();
+			gui->side_bar.rect.y = gui->menu_bar.h;
+			gui->side_bar.rect.h = sapp_heightf() - gui->side_bar.rect.y;
 
 			if (BeginMenu("Arquivo"))
 			{
@@ -553,11 +550,11 @@ namespace mosaico_sim
 				if (BeginMenu("Tamanho da fonte"))
 				{
 					int step = 1;
-					if (InputScalar("##font_size", ImGuiDataType_U32, &state.font_size, &step))
+					if (InputScalar("##font_size", ImGuiDataType_U32, &ms.font_size, &step))
 					{
-						if (state.font_size < 8) { state.font_size = 8; }
+						if (ms.font_size < 8) { ms.font_size = 8; }
 						ImGuiIO &io = GetIO();
-						io.FontGlobalScale = state.font_size / 16.0f;
+						io.FontGlobalScale = ms.font_size / 16.0f;
 					}
 					EndMenu();
 				}
@@ -570,24 +567,24 @@ namespace mosaico_sim
 
 	static void sidebar_frame(void)
 	{
-		state.interface.side_bar.flags = ImGuiWindowFlags_NoMove
+		gui->side_bar.flags = ImGuiWindowFlags_NoMove
 			| ImGuiWindowFlags_NoCollapse
 			//| ImGuiWindowFlags_NoBackground
 			| ImGuiWindowFlags_NoTitleBar;
-		SetNextWindowPos(ImVec2(state.interface.side_bar.rect.x, state.interface.side_bar.rect.y));
+		SetNextWindowPos(ImVec2(gui->side_bar.rect.x, gui->side_bar.rect.y));
 		SetNextWindowSizeConstraints(
-			ImVec2(250.0f, state.interface.side_bar.rect.h),
-			ImVec2(sapp_widthf() * 0.5f, state.interface.side_bar.rect.h));
-		if (Begin("Barra de Controle", &state.interface.side_bar.show, state.interface.side_bar.flags))
+			ImVec2(250.0f, gui->side_bar.rect.h),
+			ImVec2(sapp_widthf() * 0.5f, gui->side_bar.rect.h));
+		if (Begin("Barra de Controle", &gui->side_bar.show, gui->side_bar.flags))
 		{
-			state.interface.side_bar.rect.w = GetWindowWidth();
-			float button_size = state
-				.interface
+			gui->side_bar.rect.w = GetWindowWidth();
+			float button_size = ms
+				.gui
 				.side_bar
 				.rect
 				.w
 				- 3.0f
-				* state.interface.side_bar.button_padding;
+				* gui->side_bar.button_padding;
 
 			static int vertices = 3;
 			static unsigned char step = 1;
@@ -610,21 +607,10 @@ namespace mosaico_sim
 			Spacing();
 
 			BeginDisabled(false);
+
 			if (Button("Adicionar##ref", ImVec2(button_size, 0.0f)))
 			{
-				void *buffer = EM_ASM_PTR(
-					let input = document.createElement('input');
-					input.type = 'file';
-					input.multiple = false;
-					input.accept = '.png,.jpg,.jpeg';
-					input.onchange = _ =>
-					{
-						let file = input.files;
-						console.log(file.arrayBuffer());
-						return file.arrayBuffer();
-					};
-					input.click();
-				);
+
 			}
 			EndDisabled();
 
@@ -708,14 +694,14 @@ namespace mosaico_sim
 		ImGuiCond posCond = ImGuiCond_Always;
 		ImGuiCond sizeCond = ImGuiCond_Always;
 		SetNextWindowBgAlpha(1.0f);
-		SetNextWindowPos(ImVec2(state.interface.side_bar.rect.w, state.interface.menu_bar.h), posCond);
+		SetNextWindowPos(ImVec2(gui->side_bar.rect.w, gui->menu_bar.h), posCond);
 		SetNextWindowSize(ImVec2(
-			state.main_window.w - state.interface.side_bar.rect.w,
-			state.main_window.h - state.interface.menu_bar.h),
+			ms.main_window.w - gui->side_bar.rect.w,
+			ms.main_window.h - gui->menu_bar.h),
 			sizeCond);
 		if (Begin("workspace", NULL, workspace_flags))
 		{
-			ImTextureID texture_id = simgui_imtextureid(state.workspace.texture);
+			ImTextureID texture_id = simgui_imtextureid(workspace->texture);
 			content_area_max = GetWindowContentRegionMax();
 			content_area_min = GetWindowContentRegionMin();
 			content_area = ImVec2(content_area_max.x - content_area_min.x, content_area_max.y - content_area_min.y);
@@ -742,11 +728,12 @@ namespace mosaico_sim
 		// draw_pieces
 		sgp_set_color(0.0f, 1.0f, 1.0f, 1.0f);
 		sgp_draw_filled_rect(0, 0, content_area.x, content_area.y);
+		image_frame();
 
 		sg_pass_action pass_action;
 		memset(&pass_action, 0, sizeof(sg_pass_action));
 		pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
-		sg_begin_pass(state.workspace.pass, &pass_action);
+		sg_begin_pass(workspace->pass, &pass_action);
 		sgp_flush();
 		sgp_end();
 		sg_end_pass();
@@ -755,6 +742,12 @@ namespace mosaico_sim
 		Text("CONTENT AREA MIN: (%.1f, %.1f)", content_area_min.x, content_area_min.y);
 		Text("CONTENT AREA MAX: (%.1f, %.1f)", content_area_max.x, content_area_max.y);
 		Text("CONTENT AREA: (%.1f, %.1f)", content_area_max.x - content_area_min.x, content_area_max.y - content_area_min.y);
+		Text("IMAGE STATE: %d", image->loadstate);
+		Text("DBG_IMG_STT: %d", ms.image.loadstate);
+		if (image->loadstate != LOADSTATE_UNKNOWN)
+		{
+        	Text("IMAGE: %s", sapp_get_dropped_file_path(0));
+		}
 		End();
 	}
 }

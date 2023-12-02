@@ -10,7 +10,7 @@
 
 namespace mosaico_sim
 {
-	mosaico_sim_state state =
+	mosaico_sim_state ms =
 	{
 		.font_size = 16,
 	};
@@ -28,9 +28,9 @@ namespace mosaico_sim
 			.logger.func = slog_func,
 		});
 
-		state.main_window.w = 1280;
-		state.main_window.h = 720;
-		state.display.pass_action.colors[0] =
+		ms.main_window.w = 1280;
+		ms.main_window.h = 720;
+		ms.display.pass_action.colors[0] =
 		{
 			.load_action = SG_LOADACTION_CLEAR,
 			.clear_value = { 0.33f, 0.33f, 0.33f, 1.0f },
@@ -41,21 +41,22 @@ namespace mosaico_sim
 
 	void frame(void)
 	{
-		state.main_window.w = sapp_width();
-		state.main_window.h = sapp_height();
-		state.frame_time = sapp_frame_duration();
-		state.dpi_scale = sapp_dpi_scale();
+		ms.main_window.w = sapp_width();
+		ms.main_window.h = sapp_height();
+		ms.frame_time = sapp_frame_duration();
+		ms.dpi_scale = sapp_dpi_scale();
 
-		sgp_begin(state.main_window.w, state.main_window.h);
+		sgp_begin(ms.main_window.w, ms.main_window.h);
 
 		interface_frame();
 
 		sg_begin_default_passf(
-			&state.display.pass_action,
-			state.main_window.w,
-			state.main_window.h);
+			&ms.display.pass_action,
+			ms.main_window.w,
+			ms.main_window.h);
 
 		// applyresources here
+
 
 		// sg_draw here
 

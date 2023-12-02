@@ -20,7 +20,7 @@ static void cleanup(void)
 	mosaico_sim::cleanup();
 }
 
-sapp_desc sokol_main(int argc, char* argv[]) 
+sapp_desc sokol_main(int argc, char* argv[])
 {
     (void)argc; (void)argv;
     return (sapp_desc){
@@ -32,6 +32,7 @@ sapp_desc sokol_main(int argc, char* argv[])
 		.fullscreen = true,
         .window_title = "MosaicoSIM",
 		.enable_clipboard = true,
+        .enable_dragndrop = true,
         .logger.func = slog_func,
     };
 }

@@ -5,29 +5,17 @@
             "label": "build",
             "type": "shell",
             "command": "build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build_launch",
+            "type": "shell",
+            "command": "build",
             "dependsOn": "StartServer"
         },
-        {
-            "label": "StartServer",
-            "type": "process",
-            "command": "${input:startServer}",
-        },
-        {
-            "label": "StopServer",
-            "type": "process",
-            "command": "${input:stopServer}",
-        },
     ],
-    "inputs": [
-        {
-            "id": "startServer",
-            "type": "command",
-            "command": "livePreview.runServerLoggingTask"
-        },
-        {
-            "id": "stopServer",
-            "type": "command",
-            "command": "livePreview.end"
-        },
-    ]
 }

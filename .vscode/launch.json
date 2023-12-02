@@ -9,8 +9,7 @@
             "enableDWARF": true,
             "request": "launch",
             "url": "http://localhost:3000/bin/MosaicoSIM.html",
-            "preLaunchTask": "build",
-            "postDebugTask": "StopServer"
+            "preLaunchTask": "build_launch",
         }
     ]
 }
