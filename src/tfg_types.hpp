@@ -26,12 +26,6 @@ namespace mosaico_sim
 		float y = 0.0f;
 	};
 
-	struct v2i
-	{
-		int x = 0;
-		int y = 0;
-	};
-
 	struct rectf
 	{
 		float x = 0.0f;
@@ -62,18 +56,39 @@ namespace mosaico_sim
 		size_t len;
 	};
 
-	struct mosaico_sim_display
+	enum mosaico_sim_image_loadstate
 	{
-		sg_pass_action pass_action;
+		LOADSTATE_UNKNOWN = 0,
+		LOADSTATE_SUCCESS,
+		LOADSTATE_FAILED,
+		LOADSTATE_FILE_TOO_BIG,
+
+		LOADSTATE_COUNT
 	};
 
-	struct mosaico_sim_workspace
+	struct mosaico_sim_interface_image
 	{
-		simgui_image_t texture;
-		sg_image image_color;
-		sg_image image_depth;
-		sg_pass pass;
-		sg_sampler sampler;
+		sg_image sgi;
+		mosaico_sim_image_loadstate loadstate;
+		int size;
+		uint8_t data[MAX_FILE_SIZE];
+		rectf rect;
+		int channels;
+		bool hide;
+	};
+
+	struct mosaico_sim_interface_workspace
+	{
+		simgui_image_t framebuffer_texture;
+		sg_image       framebuffer_image_color;
+		sg_image       framebuffer_image_depth;
+		sg_pass        framebuffer_pass;
+		sg_sampler     framebuffer_sampler;
+
+		rectf window;
+		rectf viewport;
+
+		mosaico_sim_interface_image image;
 	};
 
 	struct mosaico_sim_interface_side_bar
@@ -94,27 +109,7 @@ namespace mosaico_sim
 	{
 		mosaico_sim_interface_side_bar side_bar;
 		mosaico_sim_interface_menu_bar menu_bar;
-	};
-
-	typedef enum
-	{
-		LOADSTATE_UNKNOWN = 0,
-		LOADSTATE_SUCCESS,
-		LOADSTATE_FAILED,
-		LOADSTATE_FILE_TOO_BIG,
-
-		LOADSTATE_COUNT
-	} mosaico_sim_image_loadstate;
-
-	struct mosaico_sim_image
-	{
-		sg_image sgi;
-		mosaico_sim_image_loadstate loadstate;
-		int size;
-		uint8_t data[MAX_FILE_SIZE];
-		int width;
-		int height;
-		int channels;
+		mosaico_sim_interface_workspace workspace;
 	};
 
 	struct mosaico_sim_state
@@ -126,10 +121,9 @@ namespace mosaico_sim
 		ImFont *font_main;
 		ImFont *font_icon;
 
-		mosaico_sim_display display;
-		mosaico_sim_workspace workspace;
 		mosaico_sim_interface gui;
-		mosaico_sim_image image;
+
+		bool debug_mode;
 	};
 
 }
