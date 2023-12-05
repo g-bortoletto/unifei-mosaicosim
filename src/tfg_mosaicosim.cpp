@@ -1,13 +1,21 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "tfg_types.hpp"
-#include "tfg_interface.cpp"
+#include "tfg_mosaicosim.hpp"
+#include "tfg_gui.cpp"
+#include "tfg_workspace.cpp"
+
+#include "../inc/sokol/sokol_glue.h"
+
+#include <stdio.h>
+#define LOG_INFO(msg) fprintf(stdout, "[info] %s", msg)
 
 namespace mosaico_sim
 {
-	mosaico_sim_state ms =
+	ms_state ms =
 	{
 		.font_size = 16,
+		.debug_mode = false,
+		.workspace_frame_callback = workspace_frame,
 	};
 
 	void init(void);
@@ -17,43 +25,38 @@ namespace mosaico_sim
 
 	void init(void)
 	{
-		ms.debug_mode = false;
+		LOG_INFO("setting up sokol gfx");
 		sg_setup(&(sg_desc)
 		{
 			.context = sapp_sgcontext(),
 			.logger.func = slog_func,
 		});
 
-		ms.main_window.w = 1280;
-		ms.main_window.h = 720;
+		sgp_setup(&(sgp_desc) {});
 
-		interface_init();
+		gui_init();
+		workspace_init();
 	}
 
 	void frame(void)
 	{
-		ms.main_window.w = sapp_width();
-		ms.main_window.h = sapp_height();
-		ms.frame_time = sapp_frame_duration();
-		ms.dpi_scale = sapp_dpi_scale();
+		ms.mainwindow.w = sapp_width();
+		ms.mainwindow.h = sapp_height();
 
-		sgp_begin(ms.main_window.w, ms.main_window.h);
+		sgp_begin(ms.mainwindow.w, ms.mainwindow.h);
 
-		interface_frame();
+		gui_frame();
+		workspace_frame();
 
 		sg_begin_default_passf(&(sg_pass_action)
 		{
 			.colors[0].load_action = SG_LOADACTION_CLEAR,
 			.colors[0].clear_value = { 0.0f, 0.0f, 0.0f, 1.0f },
 		},
-		ms.main_window.w,
-		ms.main_window.h);
+		ms.mainwindow.w,
+		ms.mainwindow.h);
 
-		// applyresources here
-
-		// sg_draw here
-
-		interface_render();
+		gui_render();
 		sgp_flush();
 		sgp_end();
 		sg_end_pass();
@@ -68,12 +71,15 @@ namespace mosaico_sim
 		{
 			ms.debug_mode = !ms.debug_mode;
 		}
-		interface_input(e);
+		gui_input(e);
+		workspace_input(e);
 	}
 
 	void cleanup(void)
 	{
-		interface_cleanup();
+		workspace_cleanup();
+		gui_cleanup();
+		sgp_shutdown();
 		sg_shutdown();
 	}
 }
