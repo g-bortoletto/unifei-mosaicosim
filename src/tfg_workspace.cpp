@@ -20,7 +20,7 @@ namespace mosaico_sim
         if (ms.workspace.hide) { return; }
         if (!sgp_is_valid()) { return; }
 
-        sgp_begin(ms.workspace.window_rect.w, ms.workspace.window_rect.h);
+        sgp_begin(sapp_width(), sapp_height());
 
         // clear screen
         sgp_set_color(

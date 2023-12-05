@@ -41,8 +41,8 @@ namespace mosaico_sim
                     {
                         .x = 0.0f,
                         .y = 0.0f,
-                        .w = (float)background_image.width,
-                        .h = (float)background_image.height,
+                        .w = ms.mainwindow.w,
+                        .h = ms.mainwindow.h,
                     },
                     {
                         .x = 0.0f,
