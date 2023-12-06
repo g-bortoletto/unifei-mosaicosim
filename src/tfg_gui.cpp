@@ -41,15 +41,18 @@ namespace mosaico_sim
 		ImGuiIO &io = GetIO();
 		gui_font_main_load(io);
 		gui_font_icon_load(io);
-		sg_image ms_image = sg_make_image(&(sg_image_desc)
+		int offscreen_width = 2048;
+		int offscreen_height = 2048;
+		sg_image offscreen_image = sg_make_image(&(sg_image_desc)
 		{
 			.render_target = true,
-			.width = sapp_width(),
-			.height = sapp_height(),
+			.width = offscreen_width,
+			.height = offscreen_height,
+			.pixel_format = SG_PIXELFORMAT_RGBA8,
 		});
-		ms.offscreen_texture = simgui_make_image(&(simgui_image_desc_t)
+		ms.offscreen.texture = simgui_make_image(&(simgui_image_desc_t)
 		{
-			.image = ms_image,
+			.image = offscreen_image,
 			.sampler = sg_make_sampler(&(sg_sampler_desc)
 			{
 				.min_filter = SG_FILTER_LINEAR,
@@ -58,17 +61,28 @@ namespace mosaico_sim
 				.wrap_v = SG_WRAP_CLAMP_TO_EDGE,
 			}),
 		});
-		ms.offscreen_pass = sg_make_pass(&(sg_pass_desc)
+		ms.offscreen.pass = sg_make_pass(&(sg_pass_desc)
 		{
-			.color_attachments[0].image = ms_image,
+			.color_attachments[0].image = offscreen_image,
 			.depth_stencil_attachment.image = sg_make_image(&(sg_image_desc)
 			{
 				.render_target = true,
-				.width = sapp_width(),
-				.height = sapp_height(),
+				.width = offscreen_width,
+				.height = offscreen_height,
 				.pixel_format = (sg_pixel_format)sapp_depth_format(),
 			}),
 		});
+		ms.offscreen.pass_action =
+		{
+			.colors[0].load_action = SG_LOADACTION_CLEAR,
+			.colors[0].clear_value = { 0.0f, 0.0f, 0.0f, 1.0f },
+		};
+
+		ms.onscreen.pass_action =
+		{
+			.colors[0].load_action = SG_LOADACTION_CLEAR,
+			.colors[0].clear_value = { 1.0f, 1.0f, 1.0f, 1.0f },
+		};
 
 		ms.menubar = ms_menubar
 		{
@@ -438,6 +452,7 @@ namespace mosaico_sim
 				.w = window_size.x,
 				.h = window_size.y,
 			};
+			ms.workspace.window_ratio = ms.workspace.window_rect.w / ms.workspace.window_rect.h;
 
 			ImVec2 content_min = GetWindowContentRegionMin();
 			ImVec2 content_max = GetWindowContentRegionMax();
@@ -445,27 +460,38 @@ namespace mosaico_sim
 			{
 				.x = 0.0f,
 				.y = 0.0f,
-				.w = content_max.x,
-				.h = content_max.y,
+				.w = content_max.x - content_min.x,
+				.h = content_max.y - content_min.y,
 			};
-			sg_image_desc image = sg_query_image_desc(ms.workspace.background_image.texture);
-			ImTextureID texture_id = simgui_imtextureid(ms.offscreen_texture);
-			Image(texture_id, ImVec2(image.width, image.height));
+			ms.workspace.viewport_ratio = ms.workspace.viewport_rect.w / ms.workspace.viewport_rect.h;
 
-			if (ms.workspace_frame_callback)
+			if (!ms.workspace.hide)
 			{
-				ImColor bg = GetStyle().Colors[ImGuiCol_WindowBg];
-				ms.workspace.background_color =
+				sg_image_desc image = sg_query_image_desc(ms.workspace.background_image.texture);
+				ImTextureID texture_id = simgui_imtextureid(ms.offscreen.texture);
+				if (ms.workspace.background_image.loadstate == LOADSTATE_SUCCESS)
 				{
-					.r = bg.Value.x,
-					.g = bg.Value.y,
-					.b = bg.Value.z,
-					.a = bg.Value.w,
-				};
-				ms.workspace_frame_callback();
+					Image(texture_id, ImVec2(image.width, image.height));
+				}
+				else
+				{
+					Image(texture_id, ImVec2(ms.workspace.viewport_rect.w, ms.workspace.viewport_rect.h));
+				}
 			}
-
 			End();
+		}
+
+		if (ms.workspace_frame_callback)
+		{
+			ImColor bg = GetStyle().Colors[ImGuiCol_WindowBg];
+			ms.workspace.background_color =
+			{
+				.r = bg.Value.x,
+				.g = bg.Value.y,
+				.b = bg.Value.z,
+				.a = bg.Value.w,
+			};
+			ms.workspace_frame_callback();
 		}
 	}
 }

@@ -49,7 +49,9 @@ namespace mosaico_sim
 	struct ms_workspace
 	{
 		rectf          window_rect;
+		float          window_ratio;
 		rectf          viewport_rect;
+		float          viewport_ratio;
 		ms_image       background_image;
 		color          background_color;
 		bool           hide;
@@ -76,8 +78,17 @@ namespace mosaico_sim
 		ImFont         *font_main;
 		ImFont         *font_icon;
 
-		simgui_image_t offscreen_texture;
-		sg_pass        offscreen_pass;
+		struct
+		{
+			simgui_image_t texture;
+			sg_pass        pass;
+			sg_pass_action pass_action;
+		} offscreen;
+
+		struct
+		{
+			sg_pass_action pass_action;
+		} onscreen;
 
 		ms_menubar     menubar;
 		ms_sidebar     sidebar;

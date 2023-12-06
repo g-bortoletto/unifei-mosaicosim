@@ -38,12 +38,7 @@ namespace mosaico_sim
                 sgp_reset_color();
                 sgp_draw_textured_rect(
                     0,
-                    {
-                        .x = 0.0f,
-                        .y = 0.0f,
-                        .w = ms.mainwindow.w,
-                        .h = ms.mainwindow.h,
-                    },
+                    ms.workspace.viewport_rect,
                     {
                         .x = 0.0f,
                         .y = 0.0f,

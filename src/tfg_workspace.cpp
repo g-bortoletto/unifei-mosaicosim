@@ -20,24 +20,22 @@ namespace mosaico_sim
         if (ms.workspace.hide) { return; }
         if (!sgp_is_valid()) { return; }
 
-        sgp_begin(sapp_width(), sapp_height());
-
-        // clear screen
-        sgp_set_color(
-            ms.workspace.background_color.r,
-            ms.workspace.background_color.g,
-            ms.workspace.background_color.b,
-            ms.workspace.background_color.a);
-        sgp_clear();
-        sgp_reset_color();
+        sgp_begin(ms.workspace.viewport_rect.w, ms.workspace.viewport_rect.h);
 
 		// draw
         image_frame();
 
-		sg_begin_pass(ms.offscreen_pass, &(sg_pass_action)
-		{
-            .colors[0].load_action = SG_LOADACTION_CLEAR,
-        });
+        float ratio = (float)ms.workspace.window_rect.w / (float)ms.workspace.window_rect.h;
+        sgp_project(
+            ms.workspace.viewport_rect.x,
+            ratio * 1000.0f,
+            1000.0f,
+            ms.workspace.viewport_rect.y);
+        sgp_set_color(0.0f, 1.0f, 0.0f, 1.0f);
+        sgp_draw_filled_rect(10.0f, 10.0f, 100.0f, 100.0f);
+
+		sg_begin_pass(ms.offscreen.pass, ms.offscreen.pass_action);
+
 		sgp_flush();
 		sgp_end();
 		sg_end_pass();
