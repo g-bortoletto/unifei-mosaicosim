@@ -33,18 +33,19 @@ namespace mosaico_sim
             if (sgp_is_valid() && !ms.workspace.background_image.hide)
             {
                 sg_image_desc background_image = sg_query_image_desc(ms.workspace.background_image.texture);
+                ms.workspace.background_image.image_x_viewport_ratio =
+                {
+                    .x = (float)background_image.width / (float)ms.workspace.viewport_rect.w,
+                    .y = (float)background_image.height / (float)ms.workspace.viewport_rect.h,
+                };
                 sgp_set_image(0, ms.workspace.background_image.texture);
                 sgp_push_transform();
                 sgp_reset_color();
-                sgp_draw_textured_rect(
-                    0,
-                    ms.workspace.viewport_rect,
-                    {
-                        .x = 0.0f,
-                        .y = 0.0f,
-                        .w = (float)background_image.width,
-                        .h = (float)background_image.height,
-                    });
+                sgp_draw_filled_rect(
+                    0.0f,
+                    0.0f,
+                    (float)background_image.width / (float)background_image.height * ms.workspace.projection_base,
+                    ms.workspace.projection_base);
                 sgp_pop_transform();
                 sgp_reset_image(0);
             }
@@ -77,7 +78,7 @@ namespace mosaico_sim
             int height = 0;
             ms.workspace.background_image.loadstate = LOADSTATE_SUCCESS;
             ms.workspace.background_image.size = (int) response->data.size;
-            stbi_set_flip_vertically_on_load(1);
+            // stbi_set_flip_vertically_on_load(1);
             stbi_uc *pixels = stbi_load_from_memory(
                 ms.workspace.background_image.data,
                 ms.workspace.background_image.size,

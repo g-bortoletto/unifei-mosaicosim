@@ -44,6 +44,7 @@ namespace mosaico_sim
 		int                size;
 		uint8_t            data[MAX_FILE_SIZE];
 		bool               hide;
+		v2f                image_x_viewport_ratio;
 	};
 
 	struct ms_workspace
@@ -54,6 +55,8 @@ namespace mosaico_sim
 		float          viewport_ratio;
 		ms_image       background_image;
 		color          background_color;
+		float          projection_base;
+		float          scale;
 		bool           hide;
 	};
 
@@ -83,6 +86,7 @@ namespace mosaico_sim
 			simgui_image_t texture;
 			sg_pass        pass;
 			sg_pass_action pass_action;
+			int            resolution;
 		} offscreen;
 
 		struct
@@ -94,6 +98,14 @@ namespace mosaico_sim
 		ms_sidebar     sidebar;
 		ms_workspace   workspace;
 		void           (*workspace_frame_callback)(void);
+
+		struct
+		{
+			float x_previous;
+			float y_previous;
+			float x;
+			float y;
+		} mouse;
 
 		bool           debug_mode;
 	};

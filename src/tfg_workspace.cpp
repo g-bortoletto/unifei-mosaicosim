@@ -12,6 +12,8 @@ namespace mosaico_sim
 
     void workspace_init(void)
     {
+        ms.workspace.projection_base = 100.0f;
+        ms.workspace.scale = 1.0f;
         image_init();
     }
 
@@ -21,18 +23,26 @@ namespace mosaico_sim
         if (!sgp_is_valid()) { return; }
 
         sgp_begin(ms.workspace.viewport_rect.w, ms.workspace.viewport_rect.h);
+        sgp_set_color(
+            ms.workspace.background_color.r,
+            ms.workspace.background_color.g,
+            ms.workspace.background_color.b,
+            ms.workspace.background_color.a);
+        sgp_clear();
+        sgp_reset_color();
 
-		// draw
-        image_frame();
-
-        float ratio = (float)ms.workspace.window_rect.w / (float)ms.workspace.window_rect.h;
         sgp_project(
             ms.workspace.viewport_rect.x,
-            ratio * 1000.0f,
-            1000.0f,
+            ms.workspace.viewport_ratio * ms.workspace.projection_base,
+            ms.workspace.projection_base,
             ms.workspace.viewport_rect.y);
-        sgp_set_color(0.0f, 1.0f, 0.0f, 1.0f);
-        sgp_draw_filled_rect(10.0f, 10.0f, 100.0f, 100.0f);
+
+        image_frame();
+
+        // sgp_push_transform();
+        // sgp_set_color(0.0f, 1.0f, 0.0f, 1.0f);
+        // sgp_draw_filled_rect(10.0f, 10.0f, 10.0f, 10.0f);
+        // sgp_pop_transform();
 
 		sg_begin_pass(ms.offscreen.pass, ms.offscreen.pass_action);
 
@@ -44,6 +54,19 @@ namespace mosaico_sim
     void workspace_input(const sapp_event *e)
     {
         image_input(e);
+        if (e->type == SAPP_EVENTTYPE_MOUSE_SCROLL
+            && e->modifiers == SAPP_MODIFIER_CTRL)
+        {
+            if (e->scroll_y > 0)
+            {
+                ms.workspace.scale *= 1.1f;
+            }
+
+            if (e->scroll_y < 0)
+            {
+                ms.workspace.scale /= 1.1f;
+            }
+        }
     }
 
     void workspace_cleanup(void)

@@ -68,6 +68,15 @@ namespace mosaico_sim
 		{
 			ms.debug_mode = !ms.debug_mode;
 		}
+
+		if (e->type == SAPP_EVENTTYPE_MOUSE_MOVE)
+		{
+			ms.mouse.x_previous = ms.mouse.x;
+			ms.mouse.y_previous = ms.mouse.y;
+			ms.mouse.x          = e->mouse_x;
+			ms.mouse.y          = e->mouse_y;
+		}
+
 		gui_input(e);
 		workspace_input(e);
 	}

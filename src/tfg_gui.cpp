@@ -36,18 +36,17 @@ namespace mosaico_sim
 			.no_default_font = true,
 			.logger.func = slog_func,
 		});
-		StyleColorsDark(&GetStyle());
-		// StyleColorsLight(&GetStyle());
+		ms.offscreen.resolution = 4096;
+		// StyleColorsDark(&GetStyle());
+		StyleColorsLight(&GetStyle());
 		ImGuiIO &io = GetIO();
 		gui_font_main_load(io);
 		gui_font_icon_load(io);
-		int offscreen_width = 2048;
-		int offscreen_height = 2048;
 		sg_image offscreen_image = sg_make_image(&(sg_image_desc)
 		{
 			.render_target = true,
-			.width = offscreen_width,
-			.height = offscreen_height,
+			.width = ms.offscreen.resolution,
+			.height = ms.offscreen.resolution,
 			.pixel_format = SG_PIXELFORMAT_RGBA8,
 		});
 		ms.offscreen.texture = simgui_make_image(&(simgui_image_desc_t)
@@ -67,8 +66,8 @@ namespace mosaico_sim
 			.depth_stencil_attachment.image = sg_make_image(&(sg_image_desc)
 			{
 				.render_target = true,
-				.width = offscreen_width,
-				.height = offscreen_height,
+				.width = ms.offscreen.resolution,
+				.height = ms.offscreen.resolution,
 				.pixel_format = (sg_pixel_format)sapp_depth_format(),
 			}),
 		});
@@ -340,9 +339,8 @@ namespace mosaico_sim
 			Spacing();
 
 			Text("Zoom %s", ICON_FA_SEARCH);
-			static float zoom = 1.0f;
 			SetNextItemWidth(button_size);
-			InputFloat("##Zoom", &zoom, 0.1f, 1.0f, "%.2f");
+			InputFloat("##Zoom", &ms.workspace.scale, 0.1f, 1.0f, "%.2f");
 			Spacing();
 
 			for (int i = 0; i < 10; ++i)
@@ -468,10 +466,28 @@ namespace mosaico_sim
 			if (!ms.workspace.hide)
 			{
 				sg_image_desc image = sg_query_image_desc(ms.workspace.background_image.texture);
+				float image_ratio = (float)image.width / (float)image.height;
 				ImTextureID texture_id = simgui_imtextureid(ms.offscreen.texture);
 				if (ms.workspace.background_image.loadstate == LOADSTATE_SUCCESS)
 				{
-					Image(texture_id, ImVec2(image.width, image.height));
+					ImVec2 image_rect = ImVec2(ms.workspace.viewport_rect.w, ms.workspace.viewport_rect.h);
+					bool image_is_larger_than_viewport = image.width > image_rect.x || image.height > image_rect.y;
+					bool width_is_larger_than_height = (float)image.width / (float)image.height > 1;
+
+					if (image_is_larger_than_viewport && width_is_larger_than_height)
+					{
+						image_rect.x = image.width;
+						image_rect.y = image.width / ms.workspace.viewport_ratio;
+					}
+					else
+					{
+						image_rect.x = image.height * ms.workspace.viewport_ratio;
+						image_rect.y = image.height;
+					}
+
+					image_rect.x *= ms.workspace.scale;
+					image_rect.y *= ms.workspace.scale;
+					Image(texture_id, image_rect);
 				}
 				else
 				{
@@ -492,6 +508,45 @@ namespace mosaico_sim
 				.a = bg.Value.w,
 			};
 			ms.workspace_frame_callback();
+		}
+
+		if (ms.debug_mode)
+		{
+			SetNextWindowPos(ImVec2(300.0f, 22.0f), ImGuiCond_Once);
+			if (Begin("DEBUG", &ms.debug_mode, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				SeparatorText("GENERAL");
+				Text("WINDOW: (%.1f, %.1f, %.1f, %.1f)",
+					ms.mainwindow.x,
+					ms.mainwindow.y,
+					ms.mainwindow.w,
+					ms.mainwindow.h);
+				Text("WS_WINDOW: (%.1f, %.1f, %.1f, %.1f)",
+					ms.workspace.window_rect.x,
+					ms.workspace.window_rect.y,
+					ms.workspace.window_rect.w,
+					ms.workspace.window_rect.h);
+				Text("WS_VIEWPORT: (%.1f, %.1f, %.1f, %.1f)",
+					ms.workspace.viewport_rect.x,
+					ms.workspace.viewport_rect.y,
+					ms.workspace.viewport_rect.w,
+					ms.workspace.viewport_rect.h);
+
+				sg_image_desc image = sg_query_image_desc(ms.workspace.background_image.texture);
+				Text("OFFSCREEN_IMAGE: (0, 0, %d, %d)",
+					image.width,
+					image.height);
+
+				SeparatorText("INPUT");
+				Text("MOUSE_POSITION: (%.1f, %.1f)",
+					ms.mouse.x,
+					ms.mouse.y);
+				Text("MOUSE_POSITION_PREVIOUS: (%.1f, %.1f)",
+					ms.mouse.x_previous,
+					ms.mouse.y_previous);
+
+				End();
+			}
 		}
 	}
 }
