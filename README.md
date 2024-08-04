@@ -14,4 +14,4 @@ Uma ferramenta que auxilia o planejamento de mosaicos artísticos, possibilitand
 
 ![tela_instrucoes](https://github.com/user-attachments/assets/3d593166-2059-4ac1-8fa6-bb00870ea308)  
 
-SITE: [g-bortoletto.github.io/unifei-tfg/MosaicoSIM.html](https://g-bortoletto.github.io/unifei-tfg/MosaicoSIM.html) (Ainda em fase de testes)
+SITE: [Link](https://g-bortoletto.github.io/unifei-mosaicosim/MosaicoSIM.html) (Ainda em fase de testes)
